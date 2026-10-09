@@ -13,7 +13,7 @@ import { Countdown } from "../components/market/Countdown.tsx";
 import { MarketCard } from "../components/market/MarketCard.tsx";
 import { OutcomeBadge } from "../components/market/OutcomeBadge.tsx";
 import type { Market, MarketPhase, Position } from "../contracts/data.ts";
-import { deriveMarketPhase } from "../lib/marketPhase.ts";
+import { deriveMarketPhase, IN_PLAY, isClosingSoon, SETTLED } from "../lib/marketPhase.ts";
 import { ResolverError } from "../lib/resolver.ts";
 import { gameQuery } from "../queries/index.ts";
 import { rootRoute } from "./__root.tsx";
@@ -31,7 +31,6 @@ export const gameRoute = createRoute({
 
 const MAX_STAKE = BigInt(SOT.contract.defaults.maxStakePerUser);
 const FEE_BPS = SOT.contract.defaults.feeBps;
-const IN_PLAY: ReadonlySet<MarketPhase["phase"]> = new Set(["locked", "waiting", "provisional"]);
 
 type Row = { market: Market; phase: MarketPhase; position?: Position };
 
@@ -81,7 +80,7 @@ function GamePage() {
   const rows: Row[] = game.data.markets.map((m) => ({ market: m, phase: deriveMarketPhase(m, g.ply, now), position: mine.get(m.id) }));
   const open = rows.filter((r) => r.phase.phase === "open").sort((a, b) => a.market.lockTime - b.market.lockTime);
   const inPlay = rows.filter((r) => IN_PLAY.has(r.phase.phase)).sort((a, b) => a.market.fromPly - b.market.fromPly);
-  const done = rows.filter((r) => r.phase.phase !== "open" && !IN_PLAY.has(r.phase.phase)).sort((a, b) => b.market.toPly - a.market.toPly);
+  const done = rows.filter((r) => SETTLED.has(r.phase.phase)).sort((a, b) => b.market.toPly - a.market.toPly);
   const whiteToMove = g.ply % 2 === 0;
   const lastSan = g.sans.at(-1);
   const recent = g.sans.slice(-8).map((san, i, a) => ({ san, ply: g.ply - a.length + 1 + i }));
@@ -158,7 +157,7 @@ function StakeSheet({ row, initialYes, now, gameRef, onClose }: { row: Row; init
     <dialog ref={ref} className="sheet pop" aria-labelledby="sk-h" onClose={onClose} onClick={(e) => e.target === ref.current && ref.current.close()}>
       <div className="flex items-center gap-2.5 pt-3 pr-3 pl-4.5">
         {phase.phase === "open"
-          ? <span className={`tag ${phase.secondsLeft <= 5 ? "bg-coral" : "bg-gold"} text-ink`}><Countdown lockTime={market.lockTime} nowSec={now} /></span>
+          ? <span className={`tag ${isClosingSoon(phase.secondsLeft) ? "bg-coral" : "bg-gold"} text-ink`}><Countdown lockTime={market.lockTime} nowSec={now} /></span>
           : <OutcomeBadge phase={phase} />}
         <button type="button" className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-control border-0 bg-transparent text-ink hover:bg-wash" onClick={() => ref.current?.close()} aria-label={UI.stake.close}>
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>

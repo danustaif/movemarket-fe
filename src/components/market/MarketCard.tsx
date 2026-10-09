@@ -1,6 +1,7 @@
 // Kartu pasar (FRONTEND.md bagian 8, DESIGN.md "Market card"). Open: pertanyaan besar, bar pool, tombol Yes/No.
 // Fase lain: ringkas, warna netral supaya Voided/Expired tidak terbaca sebagai No.
 import type { MarketCardProps } from "../../contracts/ui.ts";
+import { SETTLED } from "../../lib/marketPhase.ts";
 import { COPY, UI, fill } from "../common/copy.ts";
 import { odds, usdc, yesPct } from "../common/format.ts";
 import { OutcomeBadge } from "./OutcomeBadge.tsx";
@@ -23,7 +24,7 @@ export function MarketCard({ market, phase, position, feeBps, onPick }: MarketCa
   const pct = yesPct(poolYes, poolNo);
   const mine = position ? position.stakeYes + position.stakeNo : 0n;
   const open = phase.phase === "open";
-  const settled = phase.phase === "final" || phase.phase === "voided" || phase.phase === "expired" || phase.phase === "noStakes";
+  const settled = SETTLED.has(phase.phase);
 
   return (
     <article
