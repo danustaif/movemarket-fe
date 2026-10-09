@@ -59,10 +59,10 @@ describe("MarketCard Yes/No", () => {
   test("stake buttons are gone once nowSec >= lockTime - lockMarginSec", () => {
     const m = market({ lockTime: 1_000_000, poolYes: 1_000_000n, poolNo: 1_000_000n });
     const before = card(deriveMarketPhase(m, 20, 1_000_000 - SOT.frontend.lockMarginSec - 0.001), m);
-    expect(within(before.el).getAllByRole("button")).toHaveLength(2);
+    expect(within(before.el).getAllByRole("button").length).toBe(2);
     before.unmount();
     const at = card(deriveMarketPhase(m, 20, 1_000_000 - SOT.frontend.lockMarginSec), m);
-    expect(within(at.el).queryAllByRole("button")).toHaveLength(0);
+    expect(within(at.el).queryAllByRole("button").length).toBe(0);
     expect(within(at.el).getByText(S.locked)).toBeTruthy();
   });
 });

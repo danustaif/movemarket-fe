@@ -6,7 +6,7 @@ import { COPY, UI } from "../../src/components/common/copy.ts";
 import { AccountError } from "../../src/contracts/account.ts";
 import { accountService } from "../../src/lib/account/mera.ts";
 import { useAccountStore } from "../../src/stores/account.ts";
-import { ADDRESS, renderApp, stubBoundaries } from "./helpers.tsx";
+import { absent, ADDRESS, renderApp, stubBoundaries } from "./helpers.tsx";
 
 const KEY = SOT.account.storageKey;
 
@@ -47,10 +47,10 @@ describe("ACCOUNT_MISMATCH", () => {
     // Alur create: tombol utama Create account (bukan Unlock) dan tidak ada error mismatch tersisa.
     const main = screen.getByRole("main");
     expect(within(main).getByRole("button", { name: COPY.actions.createAccount })).toBeTruthy();
-    expect(within(main).queryByRole("button", { name: COPY.actions.unlock })).toBeNull();
-    expect(within(main).queryByText(COPY.errors.ACCOUNT_MISMATCH)).toBeNull();
+    absent(within(main).queryByRole("button", { name: COPY.actions.unlock }));
+    absent(within(main).queryByText(COPY.errors.ACCOUNT_MISMATCH));
     // Toast yang aksinya sudah dijalankan tidak boleh tetap menawarkan aksi yang sama.
-    expect(screen.queryByText(COPY.errors.ACCOUNT_MISMATCH)).toBeNull();
+    absent(screen.queryByText(COPY.errors.ACCOUNT_MISMATCH));
   });
 
   test("toast action startOver runs the account reset (clearMarker + end session)", async () => {

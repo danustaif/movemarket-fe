@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { COPY, UI, fill } from "../../src/components/common/copy.ts";
 import { PositionRow } from "../../src/components/me/PositionRow.tsx";
 import type { MarketPhase, Position } from "../../src/contracts/data.ts";
-import { position } from "./helpers.tsx";
+import { absent, position } from "./helpers.tsx";
 
 const SYMBOL = SOT.token.symbol;
 const claimBtn = () => screen.queryByRole<HTMLButtonElement>("button", { name: new RegExp(`^${COPY.actions.claim}`) });
@@ -25,33 +25,33 @@ describe("PositionRow", () => {
   test("Claim only when canClaim (finalized read) is true, with the bigint amount formatted", async () => {
     const { onClaim } = row(won, { phase: "final", outcome: "YES" }, { canClaim: true, canRefund: false });
     expect(claimBtn()!.textContent).toBe(`${COPY.actions.claim} 12.50 ${SYMBOL}`);
-    expect(refundBtn()).toBeNull();
+    absent(refundBtn());
     await userEvent.setup().click(claimBtn()!);
     expect(onClaim).toHaveBeenCalledTimes(1);
   });
 
   test("final with claimable > 0 but not yet claimable at the finalized block: no Claim", () => {
     row(won, { phase: "final", outcome: "YES" }, { canClaim: false, canRefund: false });
-    expect(claimBtn()).toBeNull();
+    absent(claimBtn());
   });
 
   test("Refund only when canRefund is true, amount is the total stake", async () => {
     const { onRefund } = row(voided, { phase: "voided", reason: null }, { canClaim: false, canRefund: true });
     expect(refundBtn()!.textContent).toBe(`${COPY.actions.refund} 1.75 ${SYMBOL}`);
-    expect(claimBtn()).toBeNull();
+    absent(claimBtn());
     await userEvent.setup().click(refundBtn()!);
     expect(onRefund).toHaveBeenCalledTimes(1);
   });
 
   test("voided but canRefund false at the finalized block: no Refund", () => {
     row(voided, { phase: "voided", reason: null }, { canClaim: false, canRefund: false });
-    expect(refundBtn()).toBeNull();
+    absent(refundBtn());
   });
 
   test("settled position shows no action even if the gate is still true", () => {
     row({ ...won, settled: true }, { phase: "final", outcome: "YES" }, { canClaim: true, canRefund: true });
-    expect(claimBtn()).toBeNull();
-    expect(refundBtn()).toBeNull();
+    absent(claimBtn());
+    absent(refundBtn());
   });
 
   test("busy disables the action", () => {

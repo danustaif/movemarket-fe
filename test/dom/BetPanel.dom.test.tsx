@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { COPY, UI } from "../../src/components/common/copy.ts";
 import { BetPanel, type BetPanelExtra } from "../../src/components/market/BetPanel.tsx";
 import type { BetPanelProps } from "../../src/contracts/ui.ts";
-import { market, renderInRouter } from "./helpers.tsx";
+import { absent, market, renderInRouter } from "./helpers.tsx";
 
 const SYMBOL = SOT.token.symbol;
 
@@ -29,7 +29,7 @@ describe("BetPanel", () => {
   test("chips come from SOT.frontend.betChipsUsdc and fill the amount", async () => {
     const { input, user } = await panel();
     const chips = SOT.frontend.betChipsUsdc.map((c) => screen.getByRole("button", { name: String(c) }));
-    expect(chips).toHaveLength(SOT.frontend.betChipsUsdc.length);
+    expect(chips.length).toBe(SOT.frontend.betChipsUsdc.length);
     const last = SOT.frontend.betChipsUsdc.at(-1)!;
     await user.click(screen.getByRole("button", { name: String(last) }));
     expect(input.value).toBe(String(last));
@@ -53,7 +53,7 @@ describe("BetPanel", () => {
   test("valid custom amount (min and exactly the remaining cap) stakes the bigint amount on the picked side", async () => {
     const { input, user, onStake } = await panel({ remainingCap: 3_000_000n });
     await typeAmount(input, "1");
-    expect(screen.queryByRole("alert")).toBeNull();
+    absent(screen.queryByRole("alert"));
     await typeAmount(input, "3");
     await user.click(screen.getByRole("button", { name: UI.market.no }));
     expect(stakeButton().textContent).toBe(`${COPY.actions.stake} 3.00 ${SYMBOL}`);
@@ -73,7 +73,7 @@ describe("BetPanel", () => {
 
   test("without an account the action leads to onboarding", async () => {
     const { router, user } = await panel({ account: "none" });
-    expect(screen.queryByRole("button", { name: new RegExp(`^${COPY.actions.stake}`) })).toBeNull();
+    absent(screen.queryByRole("button", { name: new RegExp(`^${COPY.actions.stake}`) }));
     const link = screen.getByRole("link", { name: COPY.actions.createAccount });
     await user.click(link);
     await waitFor(() => expect(router.state.location.pathname).toBe("/onboarding"));

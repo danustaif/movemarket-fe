@@ -3,7 +3,7 @@ import { act, screen } from "@testing-library/react";
 import { COPY, UI } from "../../src/components/common/copy.ts";
 import { ResolverError } from "../../src/lib/resolver.ts";
 import { useSseStore } from "../../src/stores/sse.ts";
-import { renderApp, stubBoundaries } from "./helpers.tsx";
+import { absent, renderApp, stubBoundaries } from "./helpers.tsx";
 
 let b: ReturnType<typeof stubBoundaries>;
 beforeEach(() => { b = stubBoundaries(); });
@@ -19,11 +19,11 @@ describe("root layout", () => {
   test("SSE reconnecting shows the reconnect banner, cleared when open", async () => {
     renderApp("/");
     await screen.findByText(COPY.home.noGames);
-    expect(screen.queryByText(COPY.errors.SSE_RECONNECTING)).toBeNull();
+    absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
     act(() => useSseStore.setState({ status: "reconnecting" }));
     expect(screen.getByRole("status").textContent).toContain(COPY.errors.SSE_RECONNECTING);
     act(() => useSseStore.setState({ status: "open" }));
-    expect(screen.queryByText(COPY.errors.SSE_RECONNECTING)).toBeNull();
+    absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
   });
 
   test("resolver offline on / shows RESOLVER_OFFLINE banner and error box, no crash", async () => {
@@ -41,6 +41,6 @@ describe("root layout", () => {
     useSseStore.setState({ status: "reconnecting" });
     renderApp("/");
     await screen.findByRole("alert");
-    expect(screen.queryByText(COPY.errors.SSE_RECONNECTING)).toBeNull();
+    absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
   });
 });

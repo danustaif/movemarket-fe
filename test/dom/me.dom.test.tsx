@@ -8,7 +8,7 @@ import { COPY } from "../../src/components/common/copy.ts";
 import { qk } from "../../src/contracts/data.ts";
 import { gasLimits, txSenderFor } from "../../src/lib/account/session.ts";
 import { useAccountStore } from "../../src/stores/account.ts";
-import { position, renderApp, stubBoundaries } from "./helpers.tsx";
+import { absent, position, renderApp, stubBoundaries } from "./helpers.tsx";
 
 const SYMBOL = SOT.token.symbol;
 const account = privateKeyToAccount("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d");
@@ -85,7 +85,7 @@ describe("/me", () => {
       const all = await claimAll();
       expect(all.disabled).toBe(false);
       expect(all.getAttribute("aria-describedby")).toBeNull();
-      expect(screen.queryByText(COPY.errors.GAS_NOT_MEASURED)).toBeNull();
+      absent(screen.queryByText(COPY.errors.GAS_NOT_MEASURED));
       const ready = all.parentElement!;
       expect(within(ready).getByText("15.50", { exact: false })).toBeTruthy();
       await userEvent.setup().click(all);

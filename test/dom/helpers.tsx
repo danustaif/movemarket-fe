@@ -1,5 +1,5 @@
 // Helper test DOM: fixture domain, render dalam router memory, dan render aplikasi lengkap dengan QueryClient baru.
-import { spyOn } from "bun:test";
+import { expect, spyOn } from "bun:test";
 import { useToasts } from "../../src/components/common/toast.ts";
 import { publicClient } from "../../src/lib/chain.ts";
 import { indexer } from "../../src/lib/envio.ts";
@@ -12,6 +12,14 @@ import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { Game, Market, Position } from "../../src/contracts/data.ts";
 import { createAppRouter } from "../../src/router.tsx";
+
+/**
+ * Elemen tidak ada. Jangan pakai expect(el).toBeNull(): saat gagal, formatter Bun mencetak node happy-dom
+ * beserta seluruh pohon window-nya dan test menggantung, bukan gagal.
+ */
+export function absent(el: Element | null) {
+  expect(el?.outerHTML ?? null).toBeNull();
+}
 
 export const GAME_REF = "lichess:game:abcdefgh";
 export const ADDRESS = "0x00000000000000000000000000000000000000a1" as const;
