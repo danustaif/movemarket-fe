@@ -59,10 +59,11 @@ export function BetPanel({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor={`${id}-amt`} className="flex justify-between text-[15px] font-extrabold">
-          <span>{UI.stake.amountLabel}</span>
+        {/* Saldo di luar <label> supaya nama aksesibel input hanya "Stake". */}
+        <div className="flex justify-between text-[15px] font-extrabold">
+          <label htmlFor={`${id}-amt`}>{UI.stake.amountLabel}</label>
           {balance !== undefined && <span className="font-semibold text-ink-muted">{fill(UI.stake.balance, { amount: usdc(balance) })}</span>}
-        </label>
+        </div>
         <div className="relative">
           <input
             id={`${id}-amt`} className="amt" inputMode="decimal" autoComplete="off" value={text}
@@ -73,7 +74,7 @@ export function BetPanel({
         <div className="flex flex-wrap gap-1.5">
           {SOT.frontend.betChipsUsdc.map((c) => (
             <button key={c} type="button" className="chip" aria-pressed={amount === parseUsdc(String(c))} onClick={() => setText(String(c))}>
-              {c}
+              {c}<span className="sr-only"> {SYMBOL}</span>
             </button>
           ))}
         </div>

@@ -13,7 +13,7 @@ async function panel(p: Partial<BetPanelProps & BetPanelExtra> = {}) {
   const onStake = mock((_yes: boolean, _amount: bigint) => {});
   const props = { market: market(), remainingCap: 100_000_000n, account: "unlocked" as const, pending: false, onStake, ...p };
   const r = renderInRouter(<BetPanel {...props} />);
-  const input = await screen.findByRole<HTMLInputElement>("textbox", { name: new RegExp(`^${UI.stake.amountLabel}`) });
+  const input = await screen.findByRole<HTMLInputElement>("textbox", { name: UI.stake.amountLabel });
   return { ...r, input, onStake, user: userEvent.setup() };
 }
 
@@ -28,12 +28,12 @@ async function typeAmount(input: HTMLInputElement, text: string) {
 describe("BetPanel", () => {
   test("chips come from SOT.frontend.betChipsUsdc and fill the amount", async () => {
     const { input, user } = await panel();
-    const chips = SOT.frontend.betChipsUsdc.map((c) => screen.getByRole("button", { name: String(c) }));
+    const chips = SOT.frontend.betChipsUsdc.map((c) => screen.getByRole("button", { name: `${c} ${SYMBOL}` }));
     expect(chips.length).toBe(SOT.frontend.betChipsUsdc.length);
     const last = SOT.frontend.betChipsUsdc.at(-1)!;
-    await user.click(screen.getByRole("button", { name: String(last) }));
+    await user.click(screen.getByRole("button", { name: `${last} ${SYMBOL}` }));
     expect(input.value).toBe(String(last));
-    expect(screen.getByRole("button", { name: String(last) }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: `${last} ${SYMBOL}` }).getAttribute("aria-pressed")).toBe("true");
   });
 
   test("custom amount below the minimum disables Stake and explains why", async () => {
