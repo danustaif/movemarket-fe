@@ -5,7 +5,8 @@ import { mnemonicToEntropy } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import { mnemonicToAccount } from "viem/accounts";
 import { AccountError } from "../src/contracts/account.ts";
-import { accountFromPrf, createAccountService, deriveEvmPrivateKey, type MeraDeps } from "../src/lib/account/mera.ts";
+import { createAccountService, type MeraDeps } from "../src/lib/account/mera.ts";
+import { accountFromPrf, deriveEvmPrivateKey } from "../src/lib/account/prf.ts";
 
 const HARDHAT = "test test test test test test test test test test test junk";
 const HARDHAT_ADDR = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
