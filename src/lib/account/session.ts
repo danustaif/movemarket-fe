@@ -21,7 +21,7 @@ import {
   type Transport,
   type WalletClient,
 } from "viem";
-import type { TxSender } from "../../contracts/account.ts";
+import type { TxSender, UserWrite } from "../../contracts/account.ts";
 import { chain, contracts, publicClient } from "../chain.ts";
 import { resolver, ResolverError } from "../resolver.ts";
 
@@ -31,11 +31,20 @@ export interface Clock {
 }
 export const realClock: Clock = { now: () => Date.now(), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
 
+type Limits = Record<GasLimitName, number | null>;
+
 /** Gas limit eksplisit dari SOT (Monad menagih limit). null = belum diukur, jangan kirim. */
-export function gasFor(name: GasLimitName): bigint {
-  const g = GAS_LIMITS[name];
+export function gasFor(name: GasLimitName, limits: Limits = GAS_LIMITS): bigint {
+  const g = limits[name];
   if (g == null) throw new Error(`gas limit for "${name}" is not set in sot/constants.json gas.limits`);
   return BigInt(g);
+}
+
+/** Gas per panggilan pengguna. claimMany adalah fungsi batch: base + perMarket x jumlah pasar (SOT bagian 13). */
+export function callGas(fn: UserWrite, args: readonly unknown[], limits: Limits = GAS_LIMITS): bigint {
+  if (fn !== "claimMany") return gasFor(fn, limits);
+  const n = BigInt((args[0] as readonly unknown[]).length);
+  return gasFor("claimManyBase", limits) + gasFor("claimManyPerMarket", limits) * n;
 }
 
 const hasCause = (e: unknown, match: (x: unknown) => boolean): boolean => {
@@ -137,7 +146,7 @@ export function createTxSender(deps: TxSenderDeps): TxSender & { markFunded(bloc
       fundedAt = blockNumber;
     },
     liveMarket: (fn, args) =>
-      enqueue({ address: deps.addresses.liveMarket, abi: liveMarketAbi, functionName: fn, args: args as readonly unknown[], gas: gasFor(fn) }),
+      enqueue({ address: deps.addresses.liveMarket, abi: liveMarketAbi, functionName: fn, args: args as readonly unknown[], gas: callGas(fn, args as readonly unknown[]) }),
     approveMax: () =>
       enqueue({
         address: deps.addresses.mockUsdc,
