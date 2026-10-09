@@ -55,7 +55,8 @@ function harness(o: { syncUnsupported?: boolean; block?: () => bigint; failFirst
 
 describe("gasFor", () => {
   test("explicit SOT limit", () => expect(gasFor("bet")).toBe(BigInt(GAS_LIMITS.bet!)));
-  test("null limit throws a typed GAS_NOT_MEASURED error", () => expect(errorCode(caught(() => gasFor("mint")))).toBe("GAS_NOT_MEASURED"));
+  test("null limit throws a typed GAS_NOT_MEASURED error", () =>
+    expect(errorCode(caught(() => gasFor("mint", { ...GAS_LIMITS, mint: null })))).toBe("GAS_NOT_MEASURED"));
 });
 
 describe("callGas", () => {
