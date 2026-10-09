@@ -47,13 +47,10 @@ beforeEach(() => {
 afterEach(() => mock.restore());
 
 describe("/me", () => {
-  test("SOT gas for claimMany is still unmeasured", () => {
-    // Prasyarat varian di bawah; kalau SOT sudah terisi, test 'GAS_NOT_MEASURED' perlu limit null lewat seam.
-    expect(GAS_LIMITS.claimManyBase).toBeNull();
-    expect(GAS_LIMITS.claimManyPerMarket).toBeNull();
-  });
-
   test("Claim all is disabled with GAS_NOT_MEASURED while claimMany gas is null; per-market claim still works", async () => {
+    const original = gasLimits.current;
+    gasLimits.current = { ...GAS_LIMITS, claimManyBase: null, claimManyPerMarket: null };
+    try {
     renderMe();
     const all = await claimAll();
     expect(all.disabled).toBe(true);
@@ -66,6 +63,9 @@ describe("/me", () => {
     await userEvent.setup().click(claim7);
     await waitFor(() => expect(liveMarket).toHaveBeenCalledWith("claim", [7n]));
     expect(liveMarket).not.toHaveBeenCalledWith("claimMany", expect.anything());
+    } finally {
+      gasLimits.current = original;
+    }
   });
 
   test("refund per market goes through refund", async () => {
