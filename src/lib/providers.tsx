@@ -8,7 +8,7 @@ import { createSseBridge } from "./sse.ts";
 
 const resolverUrl = import.meta.env.VITE_RESOLVER_URL ?? "";
 
-export const sseBridge = createSseBridge({
+const sseBridge = createSseBridge({
   baseUrl: resolverUrl,
   queryClient,
   getAddress: () => useAccountStore.getState().address,
