@@ -35,8 +35,11 @@ export const realClock: Clock = { now: () => Date.now(), sleep: (ms) => new Prom
 
 type Limits = Record<GasLimitName, number | null>;
 
+/** Limit default gasFor/canSend/callGas. Produksi selalu GAS_LIMITS dari SOT; hanya test DOM yang menggantinya. */
+export const gasLimits: { current: Limits } = { current: GAS_LIMITS };
+
 /** Gas limit eksplisit dari SOT (Monad menagih limit). null = belum diukur: AppError GAS_NOT_MEASURED, jangan kirim. */
-export function gasFor(name: GasLimitName, limits: Limits = GAS_LIMITS): bigint {
+export function gasFor(name: GasLimitName, limits: Limits = gasLimits.current): bigint {
   const g = limits[name];
   if (g == null) throw new AppError("GAS_NOT_MEASURED");
   return BigInt(g);
@@ -45,10 +48,10 @@ export function gasFor(name: GasLimitName, limits: Limits = GAS_LIMITS): bigint 
 const limitNames = (fn: UserWrite): GasLimitName[] => (fn === "claimMany" ? ["claimManyBase", "claimManyPerMarket"] : [fn]);
 
 /** false kalau gas panggilan ini belum diukur (tombol dinonaktifkan sebelum optimistic update). */
-export const canSend = (fn: UserWrite, limits: Limits = GAS_LIMITS): boolean => limitNames(fn).every((n) => limits[n] != null);
+export const canSend = (fn: UserWrite, limits: Limits = gasLimits.current): boolean => limitNames(fn).every((n) => limits[n] != null);
 
 /** Gas per panggilan pengguna. claimMany adalah fungsi batch: base + perMarket x jumlah pasar (SOT bagian 13). */
-export function callGas(fn: UserWrite, args: readonly unknown[], limits: Limits = GAS_LIMITS): bigint {
+export function callGas(fn: UserWrite, args: readonly unknown[], limits: Limits = gasLimits.current): bigint {
   if (fn !== "claimMany") return gasFor(fn, limits);
   const n = BigInt((args[0] as readonly unknown[]).length);
   return gasFor("claimManyBase", limits) + gasFor("claimManyPerMarket", limits) * n;

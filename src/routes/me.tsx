@@ -31,9 +31,6 @@ export const meRoute = createRoute({
   component: Me,
 });
 
-/** Gas claimMany belum diukur di SOT: Claim all nonaktif, klaim per pasar tetap bisa. */
-const CLAIM_ALL_READY = canSend("claimMany");
-
 function Me() {
   const acct = useAccountView();
   return (
@@ -63,6 +60,8 @@ function Positions() {
   const refund = useRefund();
   const claimMany = useClaimMany();
   const getTokens = useGetTokens();
+  /** Gas claimMany belum diukur di SOT: Claim all nonaktif, klaim per pasar tetap bisa. */
+  const claimAllReady = canSend("claimMany");
 
   const rows = (q.data ?? []).map((p) => ({ p, phase: positionPhase(p, now) }));
   // Claim/Refund hanya aktif dari angka di blok finalized (SOT D20), lewat usePayouts F1.
@@ -90,13 +89,13 @@ function Positions() {
           <b className="display text-[40px]">{usdc(claimSum)} <span className="text-xl normal-case">{SYMBOL}</span></b>
           <button
             type="button" className={`btn dark sm mt-1.5 self-start ${claimMany.isPending ? "busy" : ""}`}
-            disabled={claimable.length === 0 || claimMany.isPending || !CLAIM_ALL_READY}
-            aria-describedby={CLAIM_ALL_READY ? undefined : "claim-all-note"}
+            disabled={claimable.length === 0 || claimMany.isPending || !claimAllReady}
+            aria-describedby={claimAllReady ? undefined : "claim-all-note"}
             onClick={() => claimMany.mutate({ marketIds: claimable.map(({ p }) => p.marketId) })}
           >
             {claimMany.isPending && <Spinner size={16} />}{COPY.actions.claimAll}
           </button>
-          {!CLAIM_ALL_READY && claimable.length > 0 && <span id="claim-all-note" className="text-sm font-semibold">{COPY.errors.GAS_NOT_MEASURED}</span>}
+          {!claimAllReady && claimable.length > 0 && <span id="claim-all-note" className="text-sm font-semibold">{COPY.errors.GAS_NOT_MEASURED}</span>}
         </div>
       </div>
 
