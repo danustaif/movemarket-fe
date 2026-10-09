@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { Market } from "../src/contracts/data.ts";
-import { deriveMarketPhase } from "../src/lib/marketPhase.ts";
+import type { Market, Position } from "../src/contracts/data.ts";
+import { deriveMarketPhase, positionPhase } from "../src/lib/marketPhase.ts";
 
 // lockMarginSec = 1 (SOT.frontend.lockMarginSec)
 const base: Market = {
@@ -46,5 +46,18 @@ describe("deriveMarketPhase", () => {
   });
   test("noStakes past deadline stays noStakes", () => {
     expect(deriveMarketPhase(m({ poolYes: 0n, poolNo: 0n }), 40, 30000)).toEqual({ phase: "noStakes" });
+  });
+});
+
+describe("positionPhase", () => {
+  const pos = (o: Partial<Position>): Position => ({
+    marketId: 7n, gameRef: "lichess:game:abcdefgh", stakeYes: 1_000_000n, stakeNo: 0n, status: 0, outcome: 0,
+    resolveDeadline: 22600, settled: false, claimable: 0n, voidReason: null, ...o,
+  });
+  test("VOIDED keeps the void reason so /me can say \"no winning stakes\"", () => {
+    expect(positionPhase(pos({ status: 2, outcome: 3, voidReason: 2 }), 1000)).toEqual({ phase: "voided", reason: 2 });
+  });
+  test("RESOLVED -> final outcome", () => {
+    expect(positionPhase(pos({ status: 1, outcome: 2 }), 1000)).toEqual({ phase: "final", outcome: "NO" });
   });
 });

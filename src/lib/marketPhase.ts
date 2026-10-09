@@ -22,7 +22,7 @@ export const deriveMarketPhase: DeriveMarketPhase = (market, currentPly, nowSec)
 export function positionPhase(p: Position, nowSec: number): MarketPhase {
   const status = ENUMS.Status[p.status];
   if (status === "RESOLVED") return { phase: "final", outcome: p.outcome === 1 ? "YES" : "NO" };
-  if (status === "VOIDED") return { phase: "voided", reason: null };
+  if (status === "VOIDED") return { phase: "voided", reason: p.voidReason };
   if (nowSec > p.resolveDeadline) return { phase: "expired" };
   return { phase: "locked" };
 }

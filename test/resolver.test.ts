@@ -28,10 +28,10 @@ describe("ResolverClient", () => {
 
   test("positions() converts amounts to bigint", async () => {
     const body = { positions: [{ marketId: "123", gameRef, stakeYes: "5000000", stakeNo: "0", status: 1, outcome: 1,
-      resolveDeadline: 1790021600, settled: false, claimable: "9800000" }] };
+      resolveDeadline: 1790021600, settled: false, claimable: "9800000", voidReason: null }] };
     const [p] = await createResolverClient("http://r", fakeFetch(200, body)).positions("0x00000000000000000000000000000000000000aa");
     expect(p).toEqual({ marketId: 123n, gameRef, stakeYes: 5_000_000n, stakeNo: 0n, status: 1, outcome: 1,
-      resolveDeadline: 1790021600, settled: false, claimable: 9_800_000n });
+      resolveDeadline: 1790021600, settled: false, claimable: 9_800_000n, voidReason: null });
   });
 
   test("faucet() POSTs the address as JSON", async () => {

@@ -27,6 +27,10 @@ describe("positionFromIndexed", () => {
     expect(positionFromIndexed(pos({}, { status: "OPEN", outcome: 0 })).claimable).toBe(0n);
     expect(positionFromIndexed(pos({}, { status: "VOIDED", outcome: 3 })).status).toBe(2);
   });
+  test("carries the market void reason", () => {
+    expect(positionFromIndexed(pos({}, { status: "VOIDED", outcome: 3, voidReason: 2 })).voidReason).toBe(2);
+    expect(positionFromIndexed(pos()).voidReason).toBeNull();
+  });
 });
 
 describe("IndexerClient", () => {
