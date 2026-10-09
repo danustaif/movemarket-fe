@@ -10,7 +10,8 @@ import { useNowSec } from "../components/common/useNowSec.ts";
 import { GameHeader, PlayerBar } from "../components/game/GameHeader.tsx";
 import { BetPanel } from "../components/market/BetPanel.tsx";
 import { Countdown } from "../components/market/Countdown.tsx";
-import { MarketCard } from "../components/market/MarketCard.tsx";
+import { LowerThird } from "../components/market/LowerThird.tsx";
+import { MarketCard, VerticalPoolBar } from "../components/market/MarketCard.tsx";
 import { OutcomeBadge } from "../components/market/OutcomeBadge.tsx";
 import type { Market, MarketPhase, Position } from "../contracts/data.ts";
 import { deriveMarketPhase, IN_PLAY, isClosingSoon, SETTLED } from "../lib/marketPhase.ts";
@@ -75,6 +76,8 @@ export function GamePage() {
   const lastSan = g.sans.at(-1);
   const recent = g.sans.slice(-8).map((san, i, a) => ({ san, ply: g.ply - a.length + 1 + i }));
   const picked = pick ? rows.find((r) => r.market.id === pick.id) : undefined;
+  // Pasar yang paling cepat terkunci menjadi lower third; sisanya tetap di daftar Open now.
+  const [pinned, ...restOpen] = open;
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,6 +96,7 @@ export function GamePage() {
           <LiveBoard
             fen={g.fen} ply={g.ply} isReplay={g.isReplay}
             lastMove={lastMove(fens.prev, g.fen, lastSan, g.ply)}
+            aside={<VerticalPoolBar poolYes={pinned?.market.poolYes ?? 0n} poolNo={pinned?.market.poolNo ?? 0n} />}
             label={lastSan ? `${fill(UI.game.plyMove, { ply: g.ply, move: moveNumber(g.ply) })}, ${fill(UI.game.lastMove, { san: lastSan })}` : undefined}
           />
           <PlayerBar player={g.white} white toMove={!g.ended && whiteToMove} />
@@ -110,7 +114,7 @@ export function GamePage() {
 
         <div className="flex min-w-0 flex-col gap-5">
           <Section id="mo-h" title={UI.game.openNow} count={open.length} empty={g.ended ? fill(UI.home.finished, { result: g.result ?? "" }) : UI.game.noOpen}>
-            {open.map((r) => (
+            {restOpen.map((r) => (
               <MarketCard key={String(r.market.id)} {...r} feeBps={FEE_BPS} onPick={(yes) => setPick({ id: r.market.id, yes })} />
             ))}
           </Section>
@@ -122,6 +126,13 @@ export function GamePage() {
           </Section>
         </div>
       </div>
+
+      {pinned && (
+        <LowerThird
+          market={pinned.market} nowSec={now} position={pinned.position} feeBps={FEE_BPS}
+          onPick={(yes) => setPick({ id: pinned.market.id, yes })}
+        />
+      )}
 
       {pick && picked && (
         <StakeSheet row={picked} initialYes={pick.yes} now={now} gameRef={gameRef} onClose={() => setPick(null)} />

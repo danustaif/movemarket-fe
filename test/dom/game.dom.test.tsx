@@ -108,4 +108,22 @@ describe("/game/$gameRef", () => {
     const toast = await screen.findByRole("alert");
     expect(toast.textContent).toContain(COPY.errors.BettingClosed);
   });
+
+  test("the soonest-locking open market is pinned as the lower third, the rest stay in Open now", async () => {
+    const LATER = "Any capture in plies 37 to 40?";
+    b.game.mockResolvedValue(game([
+      market({ id: 8n, question: LATER, lockTime: nowSec() + 240 }),
+      market({ id: 7n, question: QUESTION, lockTime: nowSec() + 60, poolYes: 3_000_000n, poolNo: 1_000_000n }),
+    ]));
+    renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    const pinned = await screen.findByRole("complementary", { name: UI.game.openNow });
+    const lt = within(pinned).getByRole("article", { name: QUESTION });
+    expect(within(lt).getByRole("button", { name: new RegExp(`^${UI.market.yes} 75%`) })).toBeTruthy();
+    const list = screen.getByRole("region", { name: new RegExp(`^${UI.game.openNow}`) });
+    expect(within(list).getByRole("article", { name: LATER })).toBeTruthy();
+    expect(within(list).queryAllByRole("article", { name: QUESTION })).toHaveLength(0);
+    // Pool bar vertikal di samping papan mengikuti pasar yang di-pin.
+    const yes = `${UI.market.yes} ${fill(UI.market.poolShare, { pct: 75 })}`;
+    expect(screen.getByRole("img", { name: new RegExp(`^${yes}`) })).toBeTruthy();
+  });
 });

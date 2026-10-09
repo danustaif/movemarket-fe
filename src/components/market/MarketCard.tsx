@@ -16,6 +16,21 @@ export function PoolBar({ poolYes, poolNo }: { poolYes: bigint; poolNo: bigint }
   );
 }
 
+/** Pool bar vertikal di samping papan, dibaca seperti eval bar: No (coral) di atas, Yes (gold) di bawah. */
+export function VerticalPoolBar({ poolYes, poolNo }: { poolYes: bigint; poolNo: bigint }) {
+  const pct = yesPct(poolYes, poolNo);
+  if (pct === null) return <div aria-hidden="true" className="w-[22px] flex-none rounded-[3px] bg-rule" />;
+  const label = `${UI.market.yes} ${fill(UI.market.poolShare, { pct })}, ${UI.market.no} ${fill(UI.market.poolShare, { pct: 100 - pct })}`;
+  // Angka hanya di segmen yang cukup tinggi untuk memuatnya.
+  const num = (n: number) => (n >= 12 ? n : null);
+  return (
+    <div role="img" aria-label={label} className="flex w-[22px] flex-none flex-col overflow-hidden rounded-[3px] text-[11px] font-black text-ink [font-stretch:75%]">
+      <span className="flex justify-center bg-coral pt-1" style={{ height: `${100 - pct}%` }}>{num(100 - pct)}</span>
+      <span className="flex flex-auto items-end justify-center bg-gold pb-1">{num(pct)}</span>
+    </div>
+  );
+}
+
 /**
  * `onPick` (tambahan opsional di luar kontrak ui.ts): dipanggil saat pengguna memilih Yes/No pada pasar Open.
  * Tanpa `onPick`, tombol Yes/No tidak tampil.
