@@ -59,7 +59,6 @@ export const UI = {
     noAccount: "No account on this device yet.",
     noPositions: "No positions yet. Pick Yes or No on an open market and it shows up here.",
     stakeLine: "Yes {yes} · No {no} tUSDC",
-    won: "Won {amount} tUSDC",
   },
   leaderboard: { title: "Leaderboard", player: "Player", profit: "Net profit", predictions: "Predictions", wins: "Wins", empty: "No settled predictions yet." },
   generic: { error: "Something went wrong.", loading: "Loading" },
