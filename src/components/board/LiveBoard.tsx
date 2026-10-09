@@ -15,19 +15,22 @@ export function LiveBoard({ fen, lastMove, ply, isReplay, label, children }: Liv
   return (
     <figure className="m-0 flex flex-col gap-2">
       <div className="relative overflow-hidden rounded-control" role="img" aria-label={label ?? fill(UI.game.plyMove, { ply, move: moveNumber(ply) })}>
-        <Chessboard
-          options={{
-            position: fen,
-            allowDragging: false,
-            allowDrawingArrows: false,
-            animationDurationInMs: 220,
-            squareStyles,
-            darkSquareStyle: { backgroundColor: "var(--color-board-dark)" },
-            lightSquareStyle: { backgroundColor: "var(--color-board-light)" },
-            darkSquareNotationStyle: { ...notation, color: "var(--color-board-light)" },
-            lightSquareNotationStyle: { ...notation, color: "var(--color-board-dark)" },
-          }}
-        />
+        {/* Papan hanya tampilan: bidak react-chessboard berupa div role=button tabindex=0; inert menghapusnya dari urutan fokus. */}
+        <div inert>
+          <Chessboard
+            options={{
+              position: fen,
+              allowDragging: false,
+              allowDrawingArrows: false,
+              animationDurationInMs: 220,
+              squareStyles,
+              darkSquareStyle: { backgroundColor: "var(--color-board-dark)" },
+              lightSquareStyle: { backgroundColor: "var(--color-board-light)" },
+              darkSquareNotationStyle: { ...notation, color: "var(--color-board-light)" },
+              lightSquareNotationStyle: { ...notation, color: "var(--color-board-dark)" },
+            }}
+          />
+        </div>
         {children}
       </div>
       <figcaption className="flex items-center justify-between text-sm text-soft">

@@ -12,13 +12,16 @@ export function GameListItem({ game }: { game: GameSummary }) {
         to="/game/$gameRef" params={{ gameRef: game.gameRef }} tabIndex={-1} aria-hidden="true"
         className="block w-[120px] flex-none self-start bg-deep sm:w-[220px]"
       >
-        <Chessboard
-          options={{
-            id: `mini-${game.gameRef}`, position: game.fen, allowDragging: false, showNotation: false, showAnimations: false,
-            darkSquareStyle: { backgroundColor: "var(--color-board-dark)" },
-            lightSquareStyle: { backgroundColor: "var(--color-board-light)" },
-          }}
-        />
+        {/* inert: bidak react-chessboard fokusabel (tabindex=0) walau di dalam link aria-hidden. Klik tetap jatuh ke link. */}
+        <div inert>
+          <Chessboard
+            options={{
+              id: `mini-${game.gameRef}`, position: game.fen, allowDragging: false, showNotation: false, showAnimations: false,
+              darkSquareStyle: { backgroundColor: "var(--color-board-dark)" },
+              lightSquareStyle: { backgroundColor: "var(--color-board-light)" },
+            }}
+          />
+        </div>
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
         <div className="flex flex-wrap items-center gap-2.5">
