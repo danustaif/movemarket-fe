@@ -61,6 +61,7 @@ const hasCause = (e: unknown, match: (x: unknown) => boolean): boolean => {
 const syncUnsupported = (e: unknown) =>
   hasCause(e, (x) => x instanceof MethodNotFoundRpcError || x instanceof MethodNotSupportedRpcError || x instanceof UnsupportedProviderMethodError);
 const outOfGas = (e: unknown) => hasCause(e, (x) => x instanceof InsufficientFundsError);
+const refillFailed = (cause: unknown) => Object.assign(new AppError("GAS_REFILL_FAILED"), { cause });
 const nonceClash = (e: unknown) => hasCause(e, (x) => x instanceof NonceTooLowError || x instanceof NonceTooHighError);
 
 export interface TxSenderDeps {
@@ -120,13 +121,15 @@ export function createTxSender(deps: TxSenderDeps): TxSender & { markFunded(bloc
         if (outOfGas(e) && !refilled) {
           refilled = true;
           deps.onRefill?.();
-          // 429 GAS_TOPUP_LIMIT dilempar apa adanya; kegagalan faucet lain: tampilkan INSUFFICIENT_GAS asli.
+          // 429 GAS_TOPUP_LIMIT dilempar apa adanya; kegagalan faucet lain: GAS_REFILL_FAILED.
           const { monTx } = await deps.faucetGas(account.address).catch((fe: unknown) => {
-            throw fe instanceof ResolverError && fe.code ? fe : e;
+            throw fe instanceof ResolverError && fe.code ? fe : refillFailed(fe);
           });
           fundedAt = (await pc.waitForTransactionReceipt({ hash: monTx })).blockNumber;
           continue;
         }
+        // Isi ulang hanya sekali per transaksi; masih kurang gas berarti dana belum tiba.
+        if (outOfGas(e)) throw refillFailed(e);
         if (nonceClash(e) && !renonced) {
           renonced = true;
           continue;

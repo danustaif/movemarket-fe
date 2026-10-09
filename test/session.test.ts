@@ -127,7 +127,8 @@ describe("TxSender", () => {
 
   test("still out of gas after the refill: faucet called exactly once, error surfaces", async () => {
     const h = harness({ failAlwaysWith: new InsufficientFundsError() });
-    expect(await h.sender.liveMarket("claim", [1n]).catch((e) => e)).toBeInstanceOf(InsufficientFundsError);
+    const err = await h.sender.liveMarket("claim", [1n]).catch((e) => e);
+    expect(errorCode(err)).toBe("GAS_REFILL_FAILED");
     expect(h.topups).toHaveLength(1);
     expect(h.notices).toHaveLength(1);
   });
