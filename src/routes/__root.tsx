@@ -4,13 +4,21 @@ import { Link, Outlet, createRootRouteWithContext } from "@tanstack/react-router
 import { COPY, UI } from "../components/common/copy.ts";
 import { SYMBOL, shortAddr, usdc } from "../components/common/format.ts";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
-import { Banner } from "../components/common/States.tsx";
+import { Banner, Empty, ErrorBox } from "../components/common/States.tsx";
 import { Toaster } from "../components/common/Toaster.tsx";
 import { useAppStatus, useAccountView } from "./-wiring.ts";
 
 export interface RouterContext { queryClient: QueryClient }
 
-export const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Layout });
+export const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component: Layout,
+  errorComponent: ({ reset }) => (
+    <main className="mx-auto max-w-[560px] p-4 pt-10">
+      <ErrorBox action={<button type="button" className="btn gold sm" onClick={reset}>{COPY.actions.retry}</button>}>{UI.generic.error}</ErrorBox>
+    </main>
+  ),
+  notFoundComponent: () => <Empty action={<Link to="/" className="btn gold sm">{UI.game.back}</Link>}>{UI.generic.notFound}</Empty>,
+});
 
 function AccountArea() {
   const acct = useAccountView();

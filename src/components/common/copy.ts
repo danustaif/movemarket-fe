@@ -61,7 +61,7 @@ export const UI = {
     stakeLine: "Yes {yes} · No {no} tUSDC",
   },
   leaderboard: { title: "Leaderboard", player: "Player", profit: "Net profit", predictions: "Predictions", wins: "Wins", empty: "No settled predictions yet." },
-  generic: { error: "Something went wrong.", loading: "Loading" },
+  generic: { error: "Something went wrong.", notFound: "This page does not exist." },
 } as const;
 
 /** "Any check in {range}?" + { range } -> teks terisi. */
