@@ -28,13 +28,11 @@ export function LiveBoard({ fen, lastMove, ply, isReplay, label, children }: Liv
             lightSquareNotationStyle: { ...notation, color: "var(--color-board-dark)" },
           }}
         />
-        {isReplay && (
-          <span className="tag pointer-events-none absolute top-2 left-2 bg-muted text-[13px] tracking-[0.06em] text-ink">{COPY.market.replayBadge}</span>
-        )}
         {children}
       </div>
       <figcaption className="flex items-center justify-between text-sm text-soft">
         <span>{fill(UI.game.plyMove, { ply, move: moveNumber(ply) })}</span>
+        {isReplay && <span className="tag bg-muted text-[13px] tracking-[0.06em] text-ink">{COPY.market.replayBadge}</span>}
       </figcaption>
     </figure>
   );

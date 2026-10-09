@@ -1,5 +1,5 @@
 // Baris judul partai dan kartu pemain (DESIGN.md "Mobile game": bar pemain menempel di atas dan bawah papan).
-import { COPY, moveNumber, type GameSummary, type Player } from "@movemarket/shared";
+import { COPY, type GameSummary, type Player } from "@movemarket/shared";
 import { UI, fill } from "../common/copy.ts";
 
 export function SourceTag({ isReplay }: { isReplay: boolean }) {
@@ -15,9 +15,6 @@ export function GameHeader({ game }: { game: GameSummary }) {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <SourceTag isReplay={game.isReplay} />
       <h1 className="display m-0 min-w-0 text-[28px] break-words sm:text-[40px]">{vs(game)}</h1>
-      <span className="text-soft">
-        {game.ended && game.result ? fill(UI.home.finished, { result: game.result }) : fill(UI.game.plyMove, { ply: game.ply, move: moveNumber(game.ply) })}
-      </span>
     </div>
   );
 }

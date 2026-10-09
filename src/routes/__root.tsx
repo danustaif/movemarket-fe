@@ -23,7 +23,12 @@ export const rootRoute = createRootRouteWithContext<RouterContext>()({
 function AccountArea() {
   const acct = useAccountView();
   if (acct.status === "none") {
-    return <Link to="/onboarding" className="btn gold sm">{COPY.actions.createAccount}</Link>;
+    return (
+      <Link to="/onboarding" className="btn gold sm">
+        <span className="sm:hidden">{COPY.actions.start}</span>
+        <span className="hidden sm:inline">{COPY.actions.createAccount}</span>
+      </Link>
+    );
   }
   if (acct.status === "locked") {
     return (
@@ -52,8 +57,8 @@ function Layout() {
   return (
     <div className="flex min-h-screen flex-col pb-[58px] sm:pb-0">
       <header className="sticky top-0 z-20 bg-control">
-        <div className="mx-auto flex min-h-[60px] max-w-[1380px] items-center gap-x-3 gap-y-3 px-4 sm:gap-x-6 sm:px-7">
-          <Link to="/" className="display text-[22px] tracking-[0.02em] text-white no-underline" style={{ fontWeight: 800, fontStretch: "75%" }}>
+        <div className="mx-auto flex min-h-[60px] max-w-[1380px] items-center gap-x-2.5 px-3 sm:gap-x-6 sm:px-7">
+          <Link to="/" className="display text-[20px] tracking-[0.02em] sm:text-[22px] text-white no-underline" style={{ fontWeight: 800, fontStretch: "75%" }}>
             {COPY.brand.name}
           </Link>
           <nav aria-label="Main" className="hidden gap-1.5 sm:flex">

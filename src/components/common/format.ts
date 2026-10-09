@@ -5,10 +5,10 @@ import { formatUnits, parseUnits } from "viem";
 const DEC = SOT.token.decimals;
 export const SYMBOL = SOT.token.symbol;
 
-/** 12500000n -> "12.50". Dua desimal minimum, sampai enam kalau perlu (0.000001 tetap terlihat). */
-export function usdc(v: bigint): string {
+/** 12500000n -> "12.50". Dua desimal minimum, sampai `maxFrac` (default 6, jadi 0.000001 tetap terlihat). Dipotong, tidak dibulatkan. */
+export function usdc(v: bigint, maxFrac = 6): string {
   const [int, frac = ""] = formatUnits(v, DEC).split(".");
-  const f = frac.replace(/0+$/, "").padEnd(2, "0");
+  const f = frac.slice(0, maxFrac).replace(/0+$/, "").padEnd(2, "0");
   return `${BigInt(int).toLocaleString("en-US")}.${f}`;
 }
 

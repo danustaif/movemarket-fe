@@ -58,6 +58,9 @@ function GamePage() {
   const fen = game.data?.game.fen;
   const [fens, setFens] = useState<{ cur?: string; prev?: string }>({ cur: fen });
   if (fen !== fens.cur) setFens({ cur: fen, prev: fens.cur });
+  // Strip ply terakhir digulir ke langkah terbaru setiap ada langkah baru.
+  const stripRef = useRef<HTMLOListElement>(null);
+  useEffect(() => { stripRef.current?.scrollTo({ left: stripRef.current.scrollWidth }); }, [fen]);
 
   if (game.isPending) {
     return <div className="grid gap-4 lg:grid-cols-[minmax(0,640px)_1fr]"><Skeleton className="aspect-square" /><Skeleton className="h-[320px]" /></div>;
@@ -94,8 +97,9 @@ function GamePage() {
         </div>
       )}
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,640px)_minmax(320px,1fr)]">
-        <div className="flex min-w-0 flex-col gap-2">
+      {/* Desktop: papan menempel saat daftar pasar digulir; lebarnya dibatasi tinggi layar supaya bar pemain ikut terlihat. */}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,min(640px,calc(100vh-300px)))_minmax(320px,1fr)]">
+        <div className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-[76px]">
           <PlayerBar player={g.black} white={false} toMove={!g.ended && !whiteToMove} />
           <LiveBoard
             fen={g.fen} ply={g.ply} isReplay={g.isReplay}
@@ -104,7 +108,7 @@ function GamePage() {
           />
           <PlayerBar player={g.white} white toMove={!g.ended && whiteToMove} />
           {recent.length > 0 && (
-            <ol aria-label={fill(UI.game.lastMove, { san: lastSan ?? "" })} className="m-0 flex list-none gap-1 overflow-x-auto p-0">
+            <ol aria-label={fill(UI.game.lastMove, { san: lastSan ?? "" })} className="m-0 flex list-none gap-1 overflow-x-auto p-0" ref={stripRef}>
               {recent.map((m, i) => (
                 <li key={m.ply} className={`flex flex-none flex-col rounded-[3px] px-2.5 py-1.5 text-sm ${i === recent.length - 1 ? "bg-gold text-ink" : "bg-deep text-white"}`}>
                   <span className="text-[11px] font-bold opacity-75">{m.ply}</span>
@@ -145,10 +149,9 @@ function StakeSheet({ row, initialYes, now, gameRef, onClose }: { row: Row; init
   const { market, phase, position } = row;
   const staked = position ? position.stakeYes + position.stakeNo : 0n;
 
+  // Tanpa cleanup close(): di StrictMode close() memicu onClose dan langsung menutup lembar. Unmount sudah melepas dialog.
   useEffect(() => {
-    const d = ref.current;
-    d?.showModal();
-    return () => d?.close();
+    if (ref.current && !ref.current.open) ref.current.showModal();
   }, []);
 
   return (

@@ -7,10 +7,10 @@ import { SourceTag, gameTitle } from "./GameHeader.tsx";
 
 export function GameListItem({ game }: { game: GameSummary }) {
   return (
-    <article aria-label={gameTitle(game)} className="flex flex-wrap overflow-hidden rounded-panel bg-panel">
+    <article aria-label={gameTitle(game)} className="flex overflow-hidden rounded-panel bg-panel">
       <Link
         to="/game/$gameRef" params={{ gameRef: game.gameRef }} tabIndex={-1} aria-hidden="true"
-        className="block w-full flex-none bg-deep sm:w-[220px]"
+        className="block w-[120px] flex-none self-start bg-deep sm:w-[220px]"
       >
         <Chessboard
           options={{
@@ -20,22 +20,22 @@ export function GameListItem({ game }: { game: GameSummary }) {
           }}
         />
       </Link>
-      <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-3 px-4 py-4 sm:px-5">
+      <div className="flex min-w-0 flex-1 flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
         <div className="flex flex-wrap items-center gap-2.5">
           <SourceTag isReplay={game.isReplay} />
           {game.openMarkets > 0 && !game.ended && (
             <span className="text-sm font-bold text-gold">{fill(UI.home.openMarkets, { n: game.openMarkets })}</span>
           )}
         </div>
-        <div className="flex flex-col gap-0.5 text-[17px]">
-          <span><b>{game.white.name}</b> <span className="text-muted">{game.white.rating}</span></span>
-          <span><b>{game.black.name}</b> <span className="text-muted">{game.black.rating}</span></span>
+        <div className="flex min-w-0 flex-col gap-0.5 sm:text-[17px]">
+          <span className="truncate"><b>{game.white.name}</b> <span className="text-muted">{game.white.rating}</span></span>
+          <span className="truncate"><b>{game.black.name}</b> <span className="text-muted">{game.black.rating}</span></span>
         </div>
-        <span className="text-soft">
+        <span className="text-sm text-soft sm:text-base">
           {game.ended && game.result ? fill(UI.home.finished, { result: game.result }) : fill(UI.game.plyMove, { ply: game.ply, move: moveNumber(game.ply) })}
         </span>
         <div className="mt-auto">
-          <Link to="/game/$gameRef" params={{ gameRef: game.gameRef }} className={`btn ${game.ended ? "ghost" : "gold"}`}>
+          <Link to="/game/$gameRef" params={{ gameRef: game.gameRef }} className={`btn sm sm:min-h-12 sm:text-base ${game.ended ? "ghost" : "gold"}`}>
             {UI.home.watch}
           </Link>
         </div>

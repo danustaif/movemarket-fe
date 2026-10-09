@@ -92,7 +92,7 @@ export function BetPanel({
       <div className="flex flex-col gap-1.5 rounded-control bg-wash px-3.5 py-3 text-[15px]">
         <div className="flex justify-between gap-2.5">
           <span>{UI.stake.ifRight}</span>
-          <b className="text-lg">{usdc(valid !== null ? payout(valid, side, other, feeBps) : 0n)} {SYMBOL}</b>
+          <b className="text-lg">{usdc(valid !== null ? payout(valid, side, other, feeBps) : 0n, 2)} {SYMBOL}</b>
         </div>
         <span className="text-[13px] text-ink-muted">{UI.stake.feeNote}</span>
       </div>
