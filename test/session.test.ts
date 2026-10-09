@@ -2,7 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { GAS_LIMITS, SOT } from "@movemarket/shared";
 import { InsufficientFundsError, MethodNotFoundRpcError, maxUint256, type TransactionReceipt } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { callGas, createTxSender, gasFor, type Clock, type TxSenderDeps } from "../src/lib/account/session.ts";
+import { callGas, canSend, createTxSender, gasFor, type Clock, type TxSenderDeps } from "../src/lib/account/session.ts";
+import { errorCode } from "../src/lib/errors.ts";
+
+const caught = (f: () => unknown): unknown => { try { f(); } catch (e) { return e; } };
 
 const account = privateKeyToAccount("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d");
 const addresses = { liveMarket: "0x00000000000000000000000000000000000000a1", mockUsdc: "0x00000000000000000000000000000000000000b2" } as const;
@@ -52,7 +55,7 @@ function harness(o: { syncUnsupported?: boolean; block?: () => bigint; failFirst
 
 describe("gasFor", () => {
   test("explicit SOT limit", () => expect(gasFor("bet")).toBe(BigInt(GAS_LIMITS.bet!)));
-  test("null limit throws", () => expect(() => gasFor("mint")).toThrow(/gas limit/));
+  test("null limit throws a typed GAS_NOT_MEASURED error", () => expect(errorCode(caught(() => gasFor("mint")))).toBe("GAS_NOT_MEASURED"));
 });
 
 describe("callGas", () => {
@@ -61,8 +64,14 @@ describe("callGas", () => {
     expect(callGas("claimMany", [[1n, 2n, 3n]], limits)).toBe(170_000n));
   test("single-call functions use their own limit", () =>
     expect(callGas("claim", [1n], limits)).toBe(BigInt(GAS_LIMITS.claim!)));
-  test("claimMany throws while SOT limits are null", () =>
-    expect(() => callGas("claimMany", [[1n]], { ...GAS_LIMITS, claimManyBase: null, claimManyPerMarket: null })).toThrow(/gas limit/));
+  const unmeasured = { ...GAS_LIMITS, claimManyBase: null, claimManyPerMarket: null };
+  test("claimMany throws GAS_NOT_MEASURED while SOT limits are null", () =>
+    expect(errorCode(caught(() => callGas("claimMany", [[1n]], unmeasured)))).toBe("GAS_NOT_MEASURED"));
+  test("canSend tells the UI up front whether a call has a measured limit", () => {
+    expect(canSend("claimMany", unmeasured)).toBe(false);
+    expect(canSend("claimMany", limits)).toBe(true);
+    expect(canSend("claim", unmeasured)).toBe(true);
+  });
 });
 
 describe("TxSender", () => {

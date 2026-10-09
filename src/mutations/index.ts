@@ -3,11 +3,11 @@ import { SOT } from "@movemarket/shared";
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { maxUint256, type LocalAccount, type TransactionReceipt } from "viem";
-import { AccountError } from "../contracts/account.ts";
+import { AccountError, type TxSender, type UserWrite } from "../contracts/account.ts";
 import { qk, type Game, type Position } from "../contracts/data.ts";
 import type { MutationVars } from "../contracts/ui.ts";
 import { accountService } from "../lib/account/mera.ts";
-import { txSenderFor } from "../lib/account/session.ts";
+import { canSend, txSenderFor } from "../lib/account/session.ts";
 import { publicClient } from "../lib/chain.ts";
 import { AppError, errorCode } from "../lib/errors.ts";
 import { resolver, ResolverError } from "../lib/resolver.ts";
@@ -137,11 +137,13 @@ export function useBet() {
  * Claim/refund dengan optimistic "settled" di qk.positions. Tombol hanya diaktifkan dari usePayouts
  * (canClaim/canRefund, tag finalized); hook ini tidak mengecek ulang.
  */
-function useSettle<V>(send: (account: LocalAccount, v: V) => Promise<TransactionReceipt>, ids: (v: V) => bigint[]) {
+function useSettle<V>(fn: UserWrite, send: (sender: TxSender, v: V) => Promise<TransactionReceipt>, ids: (v: V) => bigint[]) {
   const qc = useQueryClient();
   return useMutation<TransactionReceipt, Error, V, { prev?: Position[] }>({
-    mutationFn: (v) => send(activeAccount(), v),
+    mutationFn: (v) => send(txSenderFor(activeAccount()), v),
     onMutate: async (v) => {
+      // Gas belum diukur (SOT 2.3.0): tolak sebelum optimistic "settled", supaya tidak ada rollback.
+      if (!canSend(fn)) throw new AppError("GAS_NOT_MEASURED");
       const address = useAccountStore.getState().address;
       if (!address) return {};
       const key = qk.positions(address);
@@ -161,10 +163,10 @@ function useSettle<V>(send: (account: LocalAccount, v: V) => Promise<Transaction
 }
 
 export const useClaim = () =>
-  useSettle<MutationVars["useClaim"]>((a, v) => txSenderFor(a).liveMarket("claim", [v.marketId]), (v) => [v.marketId]);
+  useSettle<MutationVars["useClaim"]>("claim", (s, v) => s.liveMarket("claim", [v.marketId]), (v) => [v.marketId]);
 
 export const useClaimMany = () =>
-  useSettle<MutationVars["useClaimMany"]>((a, v) => txSenderFor(a).liveMarket("claimMany", [v.marketIds]), (v) => v.marketIds);
+  useSettle<MutationVars["useClaimMany"]>("claimMany", (s, v) => s.liveMarket("claimMany", [v.marketIds]), (v) => v.marketIds);
 
 export const useRefund = () =>
-  useSettle<MutationVars["useRefund"]>((a, v) => txSenderFor(a).liveMarket("refund", [v.marketId]), (v) => [v.marketId]);
+  useSettle<MutationVars["useRefund"]>("refund", (s, v) => s.liveMarket("refund", [v.marketId]), (v) => [v.marketId]);

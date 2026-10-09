@@ -24,6 +24,7 @@ import {
 import { toast } from "../../components/common/toast.ts";
 import type { TxSender, UserWrite } from "../../contracts/account.ts";
 import { chain, contracts, publicClient } from "../chain.ts";
+import { AppError } from "../errors.ts";
 import { resolver, ResolverError } from "../resolver.ts";
 
 export interface Clock {
@@ -34,12 +35,17 @@ export const realClock: Clock = { now: () => Date.now(), sleep: (ms) => new Prom
 
 type Limits = Record<GasLimitName, number | null>;
 
-/** Gas limit eksplisit dari SOT (Monad menagih limit). null = belum diukur, jangan kirim. */
+/** Gas limit eksplisit dari SOT (Monad menagih limit). null = belum diukur: AppError GAS_NOT_MEASURED, jangan kirim. */
 export function gasFor(name: GasLimitName, limits: Limits = GAS_LIMITS): bigint {
   const g = limits[name];
-  if (g == null) throw new Error(`gas limit for "${name}" is not set in sot/constants.json gas.limits`);
+  if (g == null) throw new AppError("GAS_NOT_MEASURED");
   return BigInt(g);
 }
+
+const limitNames = (fn: UserWrite): GasLimitName[] => (fn === "claimMany" ? ["claimManyBase", "claimManyPerMarket"] : [fn]);
+
+/** false kalau gas panggilan ini belum diukur (tombol dinonaktifkan sebelum optimistic update). */
+export const canSend = (fn: UserWrite, limits: Limits = GAS_LIMITS): boolean => limitNames(fn).every((n) => limits[n] != null);
 
 /** Gas per panggilan pengguna. claimMany adalah fungsi batch: base + perMarket x jumlah pasar (SOT bagian 13). */
 export function callGas(fn: UserWrite, args: readonly unknown[], limits: Limits = GAS_LIMITS): bigint {

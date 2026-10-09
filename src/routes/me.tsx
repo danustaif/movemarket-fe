@@ -8,6 +8,7 @@ import { Empty, ErrorBox, Skeleton } from "../components/common/States.tsx";
 import { useNowSec } from "../components/common/useNowSec.ts";
 import { PositionRow } from "../components/me/PositionRow.tsx";
 import { qk, type Game } from "../contracts/data.ts";
+import { canSend } from "../lib/account/session.ts";
 import { MOCK_USDC } from "../lib/chain.ts";
 import { positionPhase } from "../lib/marketPhase.ts";
 import { balanceQuery, positionsQuery } from "../queries/index.ts";
@@ -29,6 +30,9 @@ export const meRoute = createRoute({
   },
   component: Me,
 });
+
+/** Gas claimMany belum diukur di SOT: Claim all nonaktif, klaim per pasar tetap bisa. */
+const CLAIM_ALL_READY = canSend("claimMany");
 
 function Me() {
   const acct = useAccountView();
@@ -86,11 +90,13 @@ function Positions() {
           <b className="display text-[40px]" style={{ fontStretch: "75%" }}>{usdc(claimSum)} <span className="text-xl">{SYMBOL}</span></b>
           <button
             type="button" className={`btn dark sm mt-1.5 self-start ${claimMany.isPending ? "busy" : ""}`}
-            disabled={claimable.length === 0 || claimMany.isPending}
+            disabled={claimable.length === 0 || claimMany.isPending || !CLAIM_ALL_READY}
+            aria-describedby={CLAIM_ALL_READY ? undefined : "claim-all-note"}
             onClick={() => claimMany.mutate({ marketIds: claimable.map(({ p }) => p.marketId) })}
           >
             {claimMany.isPending && <Spinner size={16} />}{COPY.actions.claimAll}
           </button>
+          {!CLAIM_ALL_READY && claimable.length > 0 && <span id="claim-all-note" className="text-sm font-semibold">{COPY.errors.GAS_NOT_MEASURED}</span>}
         </div>
       </div>
 
