@@ -5,7 +5,7 @@ import { mnemonicToEntropy } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import { mnemonicToAccount } from "viem/accounts";
 import { AccountError } from "../src/contracts/account.ts";
-import { accountFromPrf, createAccountService, type MeraDeps } from "../src/lib/account/mera.ts";
+import { accountFromPrf, createAccountService, deriveEvmPrivateKey, type MeraDeps } from "../src/lib/account/mera.ts";
 
 const HARDHAT = "test test test test test test test test test test test junk";
 const HARDHAT_ADDR = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
@@ -24,6 +24,22 @@ describe("derivation (SOT 12)", () => {
       "absurd avoid scissors anxiety gather lottery category door army half long cage bachelor another expect people blade school educate curtain scrub monitor lady beyond",
     ).address);
     expect(prf.every((b) => b === 0)).toBe(true);
+  });
+  test("failed derivation still zeroes the PRF buffer", () => {
+    const prf = new Uint8Array(31).fill(7); // bukan panjang entropi BIP-39 yang sah: derivasi melempar
+    expect(() => accountFromPrf(prf)).toThrow();
+    expect(prf.every((b) => b === 0)).toBe(true);
+  });
+  test("HD key without private key: explicit error, seed zeroed, HD keys wiped", () => {
+    let seed: Uint8Array | undefined;
+    const wiped: string[] = [];
+    const child = { privateKey: null, wipePrivateData() { wiped.push("child"); return this; } };
+    const master = { derive: () => child, wipePrivateData() { wiped.push("master"); return this; } };
+    const fromMasterSeed = (s: Uint8Array) => ((seed = s), master) as never;
+    expect(() => deriveEvmPrivateKey(prf32(), fromMasterSeed)).toThrow(/private key/);
+    expect(seed!.length).toBe(64);
+    expect(seed!.every((b) => b === 0)).toBe(true);
+    expect(wiped.sort()).toEqual(["child", "master"]);
   });
 });
 
