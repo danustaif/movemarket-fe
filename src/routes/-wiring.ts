@@ -6,8 +6,7 @@ import type { Address } from "viem";
 import { create } from "zustand";
 import { UI } from "../components/common/copy.ts";
 import { toast } from "../components/common/toast.ts";
-import { errorCode, errorMessage } from "../lib/errors.ts";
-import { resolver } from "../lib/resolver.ts";
+import { errorMessage } from "../lib/errors.ts";
 import { useBet as useBetRaw, useCreateAccount, useClaim as useClaimRaw, useClaimMany as useClaimManyRaw, useRefund as useRefundRaw, useUnlockAccount } from "../mutations/index.ts";
 import { useBalance, useChainTime, useGames, usePositions as usePositionsRaw } from "../queries/index.ts";
 import { useAccountStore } from "../stores/account.ts";
@@ -18,14 +17,8 @@ export { useGame, useGames, useLeaderboard, usePayouts } from "../queries/index.
 
 // ----------------------------------------------------------------- error -> toast
 
-/** Toast pesan COPY.errors; INSUFFICIENT_GAS memicu isi ulang gas otomatis (USER_FLOW bagian 8). */
+/** Toast pesan COPY.errors. Isi ulang gas ditangani TxSender (satu panggilan faucet per transaksi). */
 export function toastError(err: unknown) {
-  if (errorCode(err) === "INSUFFICIENT_GAS") {
-    const address = useAccountStore.getState().address;
-    toast("info", errorMessage(err)!);
-    if (address) resolver.faucetGas(address).catch((e) => toast("error", errorMessage(e) ?? UI.generic.error));
-    return;
-  }
   toast("error", errorMessage(err) ?? UI.generic.error);
 }
 

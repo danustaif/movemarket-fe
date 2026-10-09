@@ -1,5 +1,5 @@
 // Pengirim transaksi pengguna dengan aturan Monad (SOT 13, 13a, D21). Lihat kontrak TxSender.
-import { GAS_LIMITS, liveMarketAbi, mockUsdcAbi, SOT, type GasLimitName } from "@movemarket/shared";
+import { COPY, GAS_LIMITS, liveMarketAbi, mockUsdcAbi, SOT, type GasLimitName } from "@movemarket/shared";
 import {
   createWalletClient,
   http,
@@ -21,6 +21,7 @@ import {
   type Transport,
   type WalletClient,
 } from "viem";
+import { toast } from "../../components/common/toast.ts";
 import type { TxSender, UserWrite } from "../../contracts/account.ts";
 import { chain, contracts, publicClient } from "../chain.ts";
 import { resolver, ResolverError } from "../resolver.ts";
@@ -61,7 +62,10 @@ export interface TxSenderDeps {
   publicClient: Pick<PublicClient, "simulateContract" | "getBlockNumber" | "waitForTransactionReceipt">;
   walletClient: Pick<WalletClient<Transport, Chain, LocalAccount>, "writeContractSync" | "writeContract">;
   addresses: { liveMarket: Address; mockUsdc: Address };
+  /** Satu-satunya pemanggil POST /faucet/gas di frontend: sekali per transaksi, lalu retry sekali. */
   faucetGas: (address: Address) => Promise<{ monTx: Hex }>;
+  /** Dipanggil saat isi ulang gas dimulai (UI menampilkan errors.INSUFFICIENT_GAS). */
+  onRefill?: () => void;
   clock?: Clock;
 }
 
@@ -109,6 +113,7 @@ export function createTxSender(deps: TxSenderDeps): TxSender & { markFunded(bloc
         nonceManager.reset({ address: account.address, chainId: chain.id });
         if (outOfGas(e) && !refilled) {
           refilled = true;
+          deps.onRefill?.();
           // 429 GAS_TOPUP_LIMIT dilempar apa adanya; kegagalan faucet lain: tampilkan INSUFFICIENT_GAS asli.
           const { monTx } = await deps.faucetGas(account.address).catch((fe: unknown) => {
             throw fe instanceof ResolverError && fe.code ? fe : e;
@@ -170,6 +175,7 @@ export function txSenderFor(account: LocalAccount): ReturnType<typeof createTxSe
       walletClient: createWalletClient({ account, chain, transport: http(import.meta.env.VITE_RPC_URL || undefined) }),
       addresses: contracts(),
       faucetGas: resolver.faucetGas,
+      onRefill: () => toast("info", COPY.errors.INSUFFICIENT_GAS),
     });
     senders.set(account, s);
   }

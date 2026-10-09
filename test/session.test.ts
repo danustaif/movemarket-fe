@@ -14,18 +14,21 @@ function fakeClock(): Clock & { t: number } {
 
 type Sent = { functionName: string; args: readonly unknown[]; gas: bigint; address: string; at: number };
 
-function harness(o: { syncUnsupported?: boolean; block?: () => bigint; failFirstWith?: Error } = {}) {
+function harness(o: { syncUnsupported?: boolean; block?: () => bigint; failFirstWith?: Error; failAlwaysWith?: Error } = {}) {
   const clock = fakeClock();
   const sent: Sent[] = [];
   let failNext = o.failFirstWith;
   const receipt = { status: "success", blockNumber: 1n } as TransactionReceipt;
   const record = (p: { functionName: string; args: readonly unknown[]; gas: bigint; address: string }) => {
+    if (o.failAlwaysWith) throw o.failAlwaysWith;
     if (failNext) { const e = failNext; failNext = undefined; throw e; }
     sent.push({ functionName: p.functionName, args: p.args, gas: p.gas, address: p.address, at: clock.t });
     clock.t += 400; // inklusi blok
   };
   const topups: string[] = [];
+  const notices: number[] = [];
   const deps = {
+    onRefill: () => notices.push(topups.length),
     account,
     addresses,
     clock,
@@ -44,7 +47,7 @@ function harness(o: { syncUnsupported?: boolean; block?: () => bigint; failFirst
     },
     faucetGas: async (a: string) => { topups.push(a); return { monTx: "0xmon" }; },
   } as unknown as TxSenderDeps;
-  return { sender: createTxSender(deps), sent, clock, topups };
+  return { sender: createTxSender(deps), sent, clock, topups, notices };
 }
 
 describe("gasFor", () => {
@@ -105,5 +108,18 @@ describe("TxSender", () => {
     await h.sender.liveMarket("claim", [1n]);
     expect(h.topups).toEqual([account.address]);
     expect(h.sent).toHaveLength(1);
+  });
+
+  test("refill notice fires once, before the faucet call", async () => {
+    const h = harness({ failFirstWith: new InsufficientFundsError() });
+    await h.sender.liveMarket("claim", [1n]);
+    expect(h.notices).toEqual([0]);
+  });
+
+  test("still out of gas after the refill: faucet called exactly once, error surfaces", async () => {
+    const h = harness({ failAlwaysWith: new InsufficientFundsError() });
+    expect(await h.sender.liveMarket("claim", [1n]).catch((e) => e)).toBeInstanceOf(InsufficientFundsError);
+    expect(h.topups).toHaveLength(1);
+    expect(h.notices).toHaveLength(1);
   });
 });
