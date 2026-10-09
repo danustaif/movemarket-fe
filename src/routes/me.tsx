@@ -81,13 +81,13 @@ function Positions() {
         <div className="flex flex-col gap-1.5 rounded-panel bg-panel p-4.5">
           <span className="text-sm font-semibold text-muted">{UI.me.balance}</span>
           <b className="display text-[40px]">
-            {usdcOrDash(acct.balance)} <span className="text-xl text-muted">{SYMBOL}</span>
+            {usdcOrDash(acct.balance)} <span className="text-xl text-muted normal-case">{SYMBOL}</span>
           </b>
           <button type="button" className="btn ghost sm mt-1.5 self-start" onClick={getTokens}>{COPY.actions.getTestTokens}</button>
         </div>
         <div className="flex flex-col gap-1.5 rounded-panel bg-gold p-4.5 text-ink">
           <span className="text-sm font-bold">{UI.me.readyToClaim}</span>
-          <b className="display text-[40px]">{usdc(claimSum)} <span className="text-xl">{SYMBOL}</span></b>
+          <b className="display text-[40px]">{usdc(claimSum)} <span className="text-xl normal-case">{SYMBOL}</span></b>
           <button
             type="button" className={`btn dark sm mt-1.5 self-start ${claimMany.isPending ? "busy" : ""}`}
             disabled={claimable.length === 0 || claimMany.isPending || !CLAIM_ALL_READY}

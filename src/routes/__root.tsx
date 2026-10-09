@@ -40,7 +40,7 @@ function AccountArea() {
   }
   return (
     <Link to="/me" className="flex min-h-11 items-center gap-2.5 rounded-control bg-panel py-0 pr-1.5 pl-3 text-[15px] font-extrabold text-white no-underline">
-      <span>{usdcOrDash(acct.balance)} <span className="font-semibold text-muted">{SYMBOL}</span></span>
+      <span className="whitespace-nowrap">{usdcOrDash(acct.balance)} <span className="hidden font-semibold text-muted sm:inline">{SYMBOL}</span></span>
       {acct.address && <span className="hidden rounded-[3px] bg-gold px-2 py-1 text-[13px] text-ink sm:inline">{shortAddr(acct.address)}</span>}
     </Link>
   );
