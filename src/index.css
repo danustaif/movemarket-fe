@@ -1,1 +1,120 @@
 @import "tailwindcss";
+
+/* Token dari source/DESIGN.md ("The Broadcast Booth"). Nama pendek supaya utilitas tetap terbaca: bg-studio, text-gold. */
+@theme {
+  --font-sans: Archivo, system-ui, sans-serif;
+
+  --color-studio: #0d3a35;
+  --color-control: #082a26;
+  --color-panel: #12463f;
+  --color-deep: #0a302b;
+  --color-rule: #2b5c55;
+  --color-muted: #a9c7c2;
+  --color-soft: #d3e5e2;
+  --color-gold: #f2c14e;
+  --color-coral: #ff8a6b;
+  --color-live: #c8301f;
+  --color-amber: #ffd27a;
+  --color-wash: #eef4f3;
+  --color-chipwash: #d6e4e2;
+  --color-ink: #082a26;
+  --color-ink-muted: #3d5c58;
+  --color-void: #3b4a48;
+  --color-err-surface: #3b1416;
+  --color-err-text: #ffd2cf;
+  --color-err-line: #7a2a2d;
+  --color-err-light: #b0261f;
+  --color-board-light: #eeeed2;
+  --color-board-dark: #5f9f8f;
+  --color-board-last-light: #f5f08a;
+  --color-board-last-dark: #b8c95c;
+
+  --radius-tag: 2px;
+  --radius-control: 4px;
+  --radius-panel: 6px;
+}
+
+@layer base {
+  html { background: var(--color-studio); }
+  body {
+    margin: 0;
+    background: var(--color-studio);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection { background: var(--color-gold); color: var(--color-studio); }
+  button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  :where(button, a, input, [tabindex]):focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+}
+
+@layer components {
+  /* Judul siaran: lebar sempit, kapital. Hanya untuk judul, tidak untuk kalimat. */
+  .display { font-weight: 900; font-stretch: 72%; text-transform: uppercase; line-height: 1; }
+  .tag { font-weight: 900; font-stretch: 75%; font-size: 15px; padding: 3px 8px; border-radius: var(--radius-tag); white-space: nowrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 0 20px; border: 0; border-radius: var(--radius-control);
+    font-weight: 800; font-size: 16px; line-height: 1.1; text-decoration: none; white-space: nowrap;
+    transition: background-color .12s ease, box-shadow .12s ease, transform .06s ease;
+  }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { cursor: not-allowed; opacity: .45; }
+  .btn.busy:disabled { opacity: 1; cursor: progress; }
+  .btn.lg { min-height: 56px; padding: 0 28px; font-size: 20px; font-weight: 900; font-stretch: 75%; text-transform: uppercase; }
+  .btn.sm { min-height: 44px; padding: 0 14px; font-size: 14px; }
+  .btn.gold { background: var(--color-gold); color: var(--color-ink); }
+  .btn.gold:hover:not(:disabled) { background: #f7d47f; }
+  .btn.gold:active:not(:disabled) { background: #dca937; }
+  .btn.dark { background: var(--color-control); color: #fff; }
+  .btn.dark:hover:not(:disabled) { background: #14463f; }
+  .btn.ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px var(--color-rule); }
+  .btn.ghost:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--color-muted); background: rgb(255 255 255 / .04); }
+  .btn.ghostd { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 2px var(--color-ink); }
+  .btn.ghostd:hover:not(:disabled) { background: var(--color-wash); }
+  .btn.yes { background: var(--color-gold); color: var(--color-ink); flex: 1 1 0; }
+  .btn.yes:hover:not(:disabled) { background: #f7d47f; }
+  .btn.no { background: var(--color-coral); color: #2a0d05; flex: 1 1 0; }
+  .btn.no:hover:not(:disabled) { background: #ffa68e; }
+
+  .link { background: none; border: 0; padding: 0; color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; }
+  .link:hover { color: var(--color-gold); }
+
+  .chip { min-height: 44px; min-width: 52px; padding: 0 12px; border-radius: var(--radius-control); border: 0; background: var(--color-chipwash); color: var(--color-ink); font-weight: 800; font-size: 16px; }
+  .chip:hover { background: #c3d7d4; }
+  .chip[aria-pressed="true"] { background: var(--color-control); color: #fff; }
+
+  .side { flex: 1 1 0; min-height: 64px; border-radius: var(--radius-control); border: 2px solid var(--color-ink); background: #fff; color: var(--color-ink); font-weight: 800; font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .side small { font-weight: 600; font-size: 13px; }
+  .side:hover { background: #f4f7f6; }
+  .side.yes[aria-pressed="true"] { background: var(--color-gold); }
+  .side.no[aria-pressed="true"] { background: var(--color-coral); }
+
+  .amt { width: 100%; box-sizing: border-box; min-height: 52px; border-radius: var(--radius-control); border: 2px solid #9fb9b5; padding: 0 64px 0 14px; font: 800 22px/1 var(--font-sans); color: var(--color-ink); background: #fff; font-variant-numeric: tabular-nums; }
+  .amt:focus { border-color: var(--color-ink); outline: 3px solid var(--color-gold); outline-offset: 1px; }
+  .amt[aria-invalid="true"] { border-color: #c4302b; }
+
+  .nav { color: var(--color-muted); font-weight: 700; font-size: 15px; padding: 8px 12px; border-radius: var(--radius-control); display: inline-flex; gap: 6px; align-items: center; text-decoration: none; }
+  .nav:hover { color: #fff; background: rgb(255 255 255 / .05); }
+  .nav[aria-current="page"] { color: #fff; background: var(--color-panel); }
+  .tab { flex: 1 1 0; color: var(--color-muted); font-weight: 700; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 58px; text-decoration: none; }
+  .tab[aria-current="page"] { color: var(--color-gold); }
+
+  .mcard { background: var(--color-panel); border-radius: var(--radius-panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Lembar stake: bottom sheet di layar sempit, dialog di desktop (DESIGN.md "Stake sheet"). */
+  dialog.sheet { padding: 0; border: 0; width: 100%; max-width: 520px; max-height: 92vh; margin: auto auto 0; border-radius: 8px 8px 0 0; background: #fff; color: var(--color-ink); box-shadow: 0 24px 60px rgb(0 0 0 / .4); }
+  dialog.sheet::backdrop { background: rgb(4 20 18 / .62); }
+  @media (min-width: 640px) { dialog.sheet { margin: auto; border-radius: var(--radius-panel); } }
+
+  .spin { animation: mmspin .9s linear infinite; }
+  .pop { animation: mmup .16s ease-out; }
+}
+
+@keyframes mmspin { to { transform: rotate(360deg); } }
+@keyframes mmup { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
