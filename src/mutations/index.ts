@@ -29,6 +29,7 @@ function invalidateWallet(qc: QueryClient, address: string | undefined) {
   if (!address) return;
   void qc.invalidateQueries({ queryKey: qk.positions(address) });
   void qc.invalidateQueries({ queryKey: qk.balance(address) });
+  void qc.invalidateQueries({ queryKey: qk.monBalance(address) });
   void qc.invalidateQueries({ queryKey: qk.allowance(address) });
   void qc.invalidateQueries({ queryKey: ["payouts", address.toLowerCase()] });
 }

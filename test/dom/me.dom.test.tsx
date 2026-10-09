@@ -7,6 +7,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { COPY, UI, fill } from "../../src/components/common/copy.ts";
 import { qk } from "../../src/contracts/data.ts";
 import { gasLimits, txSenderFor } from "../../src/lib/account/session.ts";
+import { chain, publicClient } from "../../src/lib/chain.ts";
 import { useAccountStore } from "../../src/stores/account.ts";
 import { absent, position, renderApp, stubBoundaries } from "./helpers.tsx";
 
@@ -66,6 +67,14 @@ describe("/me", () => {
     } finally {
       gasLimits.current = original;
     }
+  });
+
+  test("shows the MON gas balance read from the chain", async () => {
+    const getBalance = spyOn(publicClient, "getBalance").mockResolvedValue(512_345_678_900_000_000n);
+    renderMe();
+    expect(await screen.findByText(`0.5123 ${chain.nativeCurrency.symbol}`)).toBeTruthy();
+    expect(screen.getByText(UI.me.gas)).toBeTruthy();
+    expect(getBalance).toHaveBeenCalledWith({ address: addr });
   });
 
   test("refund per market goes through refund", async () => {

@@ -39,6 +39,10 @@ export const balanceQuery = (address: Address) =>
     staleTime: 5_000,
   });
 
+/** Saldo MON (gas) untuk /me. */
+export const monBalanceQuery = (address: Address) =>
+  queryOptions({ queryKey: qk.monBalance(address), queryFn: () => publicClient.getBalance({ address }), staleTime: 10_000 });
+
 export const allowanceQuery = (address: Address) =>
   queryOptions({
     queryKey: qk.allowance(address),
@@ -106,6 +110,9 @@ export const usePositions = (address: Address | undefined) =>
 
 export const useBalance = (address: Address | undefined) =>
   useQuery({ ...balanceQuery(keyAddress(address)), enabled: !!address && !!MOCK_USDC });
+
+export const useMonBalance = (address: Address | undefined) =>
+  useQuery({ ...monBalanceQuery(keyAddress(address)), enabled: !!address });
 
 export const useAllowance = (address: Address | undefined) =>
   useQuery({ ...allowanceQuery(keyAddress(address)), enabled: !!address && !!MOCK_USDC && !!LIVE_MARKET });

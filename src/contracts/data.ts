@@ -67,6 +67,7 @@ export const qk = {
   market: (id: string) => ["market", id] as const,
   positions: (addr: string) => ["positions", addr.toLowerCase()] as const,
   balance: (addr: string) => ["balance", addr.toLowerCase()] as const,
+  monBalance: (addr: string) => ["monBalance", addr.toLowerCase()] as const,
   allowance: (addr: string) => ["allowance", addr.toLowerCase()] as const,
   leaderboard: () => ["leaderboard"] as const,
   chainTime: () => ["chainTime"] as const,

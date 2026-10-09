@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { COPY, UI, fill } from "../components/common/copy.ts";
-import { SYMBOL, usdc, usdcOrDash } from "../components/common/format.ts";
+import { native, SYMBOL, usdc, usdcOrDash } from "../components/common/format.ts";
 import { Modal } from "../components/common/Modal.tsx";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { Empty, ErrorBox, Skeleton } from "../components/common/States.tsx";
@@ -11,8 +11,9 @@ import { useNowSec } from "../components/common/useNowSec.ts";
 import { PositionRow } from "../components/me/PositionRow.tsx";
 import { qk, type Game } from "../contracts/data.ts";
 import { canSend } from "../lib/account/session.ts";
+import { chain } from "../lib/chain.ts";
 import { positionPhase } from "../lib/marketPhase.ts";
-import { useAccountView, useChainOffset, useClaim, useClaimMany, useGetTokens, usePayouts, usePositionsQuery, useRefund } from "./-wiring.ts";
+import { useAccountView, useChainOffset, useClaim, useClaimMany, useGetTokens, useMonBalance, usePayouts, usePositionsQuery, useRefund } from "./-wiring.ts";
 
 export function Me() {
   const acct = useAccountView();
@@ -43,6 +44,7 @@ function Positions() {
   const refund = useRefund();
   const claimMany = useClaimMany();
   const getTokens = useGetTokens();
+  const mon = useMonBalance(acct.address).data;
   /** Gas claimMany belum diukur di SOT: Claim all nonaktif, klaim per pasar tetap bisa. */
   const claimAllReady = canSend("claimMany");
   const [confirmAll, setConfirmAll] = useState(false);
@@ -66,6 +68,11 @@ function Positions() {
           <b className="display text-[40px]">
             {usdcOrDash(acct.balance)} <span className="text-xl text-muted normal-case">{SYMBOL}</span>
           </b>
+          {mon !== undefined && (
+            <span className="text-sm text-soft">
+              {UI.me.gas} <b className="text-white">{native(mon, chain.nativeCurrency.decimals)} {chain.nativeCurrency.symbol}</b>
+            </span>
+          )}
           <button type="button" className="btn ghost sm mt-1.5 self-start" onClick={getTokens}>{COPY.actions.getTestTokens}</button>
         </div>
         <div className="flex flex-col gap-1.5 rounded-panel bg-gold p-4.5 text-ink">

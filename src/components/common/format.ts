@@ -12,6 +12,12 @@ export function usdc(v: bigint, maxFrac = 6): string {
   return `${BigInt(int).toLocaleString("en-US")}.${f}`;
 }
 
+/** Saldo native (MON, desimal dari viem chain) dipotong ke 4 desimal: 512345678900000000n -> "0.5123". */
+export function native(v: bigint, decimals: number): string {
+  const [int, frac = ""] = formatUnits(v, decimals).split(".");
+  return `${BigInt(int).toLocaleString("en-US")}.${frac.slice(0, 4).padEnd(2, "0")}`;
+}
+
 /** Nominal yang mungkin belum termuat (saldo): COPY.ui.generic.noValue sampai ada. */
 export const usdcOrDash = (v: bigint | undefined): string => (v === undefined ? COPY.ui.generic.noValue : usdc(v));
 
