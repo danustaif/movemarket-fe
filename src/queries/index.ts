@@ -1,7 +1,7 @@
 // Query hook dan queryOptions (untuk loader ensureQueryData). staleTime: FRONTEND.md bagian 4.
 import { liveMarketAbi, mockUsdcAbi, SOT } from "@movemarket/shared";
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { Address } from "viem";
+import { zeroAddress, type Address } from "viem";
 import { qk } from "../contracts/data.ts";
 import type { QueryData } from "../contracts/ui.ts";
 import { contracts, LIVE_MARKET, MOCK_USDC, publicClient } from "../lib/chain.ts";
@@ -101,21 +101,27 @@ export const useGame = (gameRef: string) => useQuery(gameQuery(gameRef));
 export const useLeaderboard = () => useQuery(leaderboardQuery());
 export const useChainTime = () => useQuery(chainTimeQuery());
 
+/**
+ * Hook tanpa akun: builder query tidak boleh menerima undefined (qk.* memanggil toLowerCase saat membangun key).
+ * Alamat nol hanya mengisi key; query tetap mati lewat `enabled: !!address`, jadi tidak pernah di-fetch.
+ */
+const keyAddress = (address: Address | undefined): Address => address ?? zeroAddress;
+
 export const usePositions = (address: Address | undefined) =>
-  useQuery({ ...positionsQuery(address!), enabled: !!address });
+  useQuery({ ...positionsQuery(keyAddress(address)), enabled: !!address });
 
 export const useBalance = (address: Address | undefined) =>
-  useQuery({ ...balanceQuery(address!), enabled: !!address && !!MOCK_USDC });
+  useQuery({ ...balanceQuery(keyAddress(address)), enabled: !!address && !!MOCK_USDC });
 
 export const useAllowance = (address: Address | undefined) =>
-  useQuery({ ...allowanceQuery(address!), enabled: !!address && !!MOCK_USDC && !!LIVE_MARKET });
+  useQuery({ ...allowanceQuery(keyAddress(address)), enabled: !!address && !!MOCK_USDC && !!LIVE_MARKET });
 
 /**
  * Gating tombol Claim/Refund: aktif hanya kalau angka di blok finalized > 0.
  * Contoh: const { canClaim } = usePayouts(address, positions.map((p) => p.marketId)).
  */
 export function usePayouts(address: Address | undefined, marketIds: readonly bigint[]) {
-  const q = useQuery({ ...payoutsQuery(address!, marketIds), enabled: !!address && marketIds.length > 0 && !!LIVE_MARKET });
+  const q = useQuery({ ...payoutsQuery(keyAddress(address), marketIds), enabled: !!address && marketIds.length > 0 && !!LIVE_MARKET });
   return {
     ...q,
     canClaim: (id: bigint) => (q.data?.[String(id)]?.claimable ?? 0n) > 0n,
