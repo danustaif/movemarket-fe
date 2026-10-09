@@ -2,6 +2,7 @@
 import { ENUMS, SOT, type IndexedPosition, type LeaderboardRow, type StatusCode } from "@movemarket/shared";
 import { appliedFeeBps, BPS } from "../components/common/format.ts";
 import type { IndexerClient, Position } from "../contracts/data.ts";
+import type { FetchLike } from "./resolver.ts";
 
 const MY_POSITIONS = `query MyPositions($user: String!) {
   Position(where: { user_id: { _eq: $user } }, order_by: { createdAt: desc }, limit: 100) {
@@ -16,7 +17,7 @@ const LEADERBOARD = `query Leaderboard {
   }
 }`;
 
-export function createIndexerClient(url: string, fetchImpl: typeof fetch = (...a) => fetch(...a)): IndexerClient {
+export function createIndexerClient(url: string, fetchImpl: FetchLike = (...a) => fetch(...a)): IndexerClient {
   async function gql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
     if (!url) throw new Error("VITE_ENVIO_URL is empty");
     const res = await fetchImpl(url, {

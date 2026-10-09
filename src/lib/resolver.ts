@@ -29,9 +29,12 @@ export const toPosition = (d: PositionDto): Position => ({
   claimable: BigInt(d.claimable),
 });
 
+/** Bentuk fetch yang dipakai klien (tanpa tambahan tipe runtime seperti `preconnect` di Bun). */
+export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
 type Res<R extends keyof ResolverRoutes> = ResolverRoutes[R]["res"];
 
-export function createResolverClient(baseUrl: string, fetchImpl: typeof fetch = (...a) => fetch(...a)): ResolverClient {
+export function createResolverClient(baseUrl: string, fetchImpl: FetchLike = (...a) => fetch(...a)): ResolverClient {
   const base = baseUrl.replace(/\/+$/, "");
 
   async function call<R extends keyof ResolverRoutes>(path: string, body?: ResolverRoutes[R]["body"]): Promise<Res<R>> {
