@@ -1,5 +1,5 @@
 // Format tampilan. Nominal selalu bigint 6 desimal (SOT.token.decimals); persen dan odds dihitung dengan bigint.
-import { SOT } from "@movemarket/shared";
+import { COPY, SOT } from "@movemarket/shared";
 import { formatUnits, parseUnits } from "viem";
 
 const DEC = SOT.token.decimals;
@@ -11,6 +11,9 @@ export function usdc(v: bigint, maxFrac = 6): string {
   const f = frac.slice(0, maxFrac).replace(/0+$/, "").padEnd(2, "0");
   return `${BigInt(int).toLocaleString("en-US")}.${f}`;
 }
+
+/** Nominal yang mungkin belum termuat (saldo): COPY.ui.generic.noValue sampai ada. */
+export const usdcOrDash = (v: bigint | undefined): string => (v === undefined ? COPY.ui.generic.noValue : usdc(v));
 
 /** Input pengguna -> bigint, null kalau bukan angka positif yang valid. */
 export function parseUsdc(s: string): bigint | null {

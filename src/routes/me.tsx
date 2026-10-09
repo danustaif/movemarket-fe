@@ -2,7 +2,7 @@
 import { Link, createRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { COPY, UI } from "../components/common/copy.ts";
-import { SYMBOL, usdc } from "../components/common/format.ts";
+import { SYMBOL, usdc, usdcOrDash } from "../components/common/format.ts";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { Empty, ErrorBox, Skeleton } from "../components/common/States.tsx";
 import { useNowSec } from "../components/common/useNowSec.ts";
@@ -80,14 +80,14 @@ function Positions() {
       <div className="grid gap-3 md:grid-cols-2">
         <div className="flex flex-col gap-1.5 rounded-panel bg-panel p-4.5">
           <span className="text-sm font-semibold text-muted">{UI.me.balance}</span>
-          <b className="display text-[40px]" style={{ fontStretch: "75%" }}>
-            {acct.balance === undefined ? "–" : usdc(acct.balance)} <span className="text-xl text-muted">{SYMBOL}</span>
+          <b className="display text-[40px]">
+            {usdcOrDash(acct.balance)} <span className="text-xl text-muted">{SYMBOL}</span>
           </b>
           <button type="button" className="btn ghost sm mt-1.5 self-start" onClick={getTokens}>{COPY.actions.getTestTokens}</button>
         </div>
         <div className="flex flex-col gap-1.5 rounded-panel bg-gold p-4.5 text-ink">
           <span className="text-sm font-bold">{UI.me.readyToClaim}</span>
-          <b className="display text-[40px]" style={{ fontStretch: "75%" }}>{usdc(claimSum)} <span className="text-xl">{SYMBOL}</span></b>
+          <b className="display text-[40px]">{usdc(claimSum)} <span className="text-xl">{SYMBOL}</span></b>
           <button
             type="button" className={`btn dark sm mt-1.5 self-start ${claimMany.isPending ? "busy" : ""}`}
             disabled={claimable.length === 0 || claimMany.isPending || !CLAIM_ALL_READY}

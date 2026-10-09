@@ -2,7 +2,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { COPY, UI } from "../components/common/copy.ts";
-import { SYMBOL, shortAddr, usdc } from "../components/common/format.ts";
+import { SYMBOL, shortAddr, usdcOrDash } from "../components/common/format.ts";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { Banner, Empty, ErrorBox } from "../components/common/States.tsx";
 import { Toaster } from "../components/common/Toaster.tsx";
@@ -40,7 +40,7 @@ function AccountArea() {
   }
   return (
     <Link to="/me" className="flex min-h-11 items-center gap-2.5 rounded-control bg-panel py-0 pr-1.5 pl-3 text-[15px] font-extrabold text-white no-underline">
-      <span>{acct.balance === undefined ? "–" : usdc(acct.balance)} <span className="font-semibold text-muted">{SYMBOL}</span></span>
+      <span>{usdcOrDash(acct.balance)} <span className="font-semibold text-muted">{SYMBOL}</span></span>
       {acct.address && <span className="hidden rounded-[3px] bg-gold px-2 py-1 text-[13px] text-ink sm:inline">{shortAddr(acct.address)}</span>}
     </Link>
   );
@@ -58,10 +58,10 @@ function Layout() {
     <div className="flex min-h-screen flex-col pb-[58px] sm:pb-0">
       <header className="sticky top-0 z-20 bg-control">
         <div className="mx-auto flex min-h-[60px] max-w-[1380px] items-center gap-x-2.5 px-3 sm:gap-x-6 sm:px-7">
-          <Link to="/" className="display text-[20px] tracking-[0.02em] sm:text-[22px] text-white no-underline" style={{ fontWeight: 800, fontStretch: "75%" }}>
+          <Link to="/" className="display font-extrabold text-[20px] tracking-[0.02em] sm:text-[22px] text-white no-underline">
             {COPY.brand.name}
           </Link>
-          <nav aria-label="Main" className="hidden gap-1.5 sm:flex">
+          <nav aria-label={UI.nav.label} className="hidden gap-1.5 sm:flex">
             {NAV.map((n) => (
               <Link key={n.to} to={n.to} className="nav" activeOptions={{ exact: n.to === "/" }} activeProps={{ "aria-current": "page" }}>
                 {n.label}
@@ -88,7 +88,7 @@ function Layout() {
 
       <footer className="mx-auto box-border w-full max-w-[1380px] px-4 pt-3.5 pb-6 text-[13px] text-muted sm:px-7">{UI.footer}</footer>
 
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_#1d5a51] sm:hidden">
+      <nav aria-label={UI.nav.label} className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_#1d5a51] sm:hidden">
         {NAV.map((n) => (
           <Link key={n.to} to={n.to} className="tab" activeOptions={{ exact: n.to === "/" }} activeProps={{ "aria-current": "page" }}>
             {n.label}

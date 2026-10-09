@@ -32,7 +32,7 @@ function Leaderboard() {
           <table className="w-full border-collapse text-left text-[15px]">
             <thead className="text-sm text-muted">
               <tr>
-                <th className="px-3.5 py-2.5 font-semibold">#</th>
+                <th className="px-3.5 py-2.5 font-semibold">{UI.leaderboard.rank}</th>
                 <th className="px-3.5 py-2.5 font-semibold">{UI.leaderboard.player}</th>
                 <th className="px-3.5 py-2.5 text-right font-semibold">{UI.leaderboard.profit}</th>
                 <th className="px-3.5 py-2.5 text-right font-semibold">{UI.leaderboard.predictions}</th>

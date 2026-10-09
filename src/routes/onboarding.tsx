@@ -29,7 +29,7 @@ function Onboarding() {
   return (
     <section aria-labelledby="onb-h" className="mx-auto flex max-w-[560px] flex-col gap-4.5">
       <div className="flex flex-col gap-2">
-        <h1 id="onb-h" className="display m-0 text-[40px] leading-[0.95] sm:text-[56px]" style={{ fontStretch: "70%" }}>{UI.onboarding.title}</h1>
+        <h1 id="onb-h" className="display m-0 text-[40px] leading-[0.95] sm:text-[56px]">{UI.onboarding.title}</h1>
         <p className="m-0 text-[17px] text-soft">{UI.onboarding.lede}</p>
       </div>
 
