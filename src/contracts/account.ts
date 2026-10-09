@@ -31,8 +31,10 @@ export interface AccountService {
 }
 
 export class AccountError extends Error {
-  constructor(readonly code: AccountErrorCode) {
+  readonly code: AccountErrorCode;
+  constructor(code: AccountErrorCode) {
     super(code);
+    this.code = code;
   }
 }
 

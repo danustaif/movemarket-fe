@@ -4,3 +4,9 @@ dist/
 .env.*
 !.env.example
 .DS_Store
+logs
+*.log
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea
