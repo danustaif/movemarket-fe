@@ -92,8 +92,8 @@ export function GamePage() {
         </div>
       )}
 
-      {/* Desktop: papan menempel saat daftar pasar digulir; lebarnya dibatasi tinggi layar supaya bar pemain ikut terlihat. */}
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,min(640px,calc(100vh-300px)))_minmax(320px,1fr)]">
+      {/* Desktop: papan menempel saat daftar pasar digulir; lebarnya dibatasi tinggi layar supaya bar pemain tetap terlihat di atas lower third. */}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,min(640px,calc(100vh-400px)))_minmax(320px,1fr)]">
         <div className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-[76px]">
           <PlayerBar player={g.black} white={false} toMove={!g.ended && !whiteToMove} />
           <LiveBoard
