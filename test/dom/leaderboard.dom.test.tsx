@@ -34,7 +34,7 @@ describe("/leaderboard", () => {
     b.leaderboard.mockRejectedValue(new Error("indexer HTTP 502"));
     renderApp("/leaderboard");
     const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain(COPY.errors.RESOLVER_OFFLINE);
+    expect(alert.textContent).toContain(COPY.errors.INDEXER_OFFLINE);
     expect(screen.getByRole("heading", { name: UI.leaderboard.title })).toBeTruthy();
     b.leaderboard.mockResolvedValue([]);
     within(alert).getByRole("button", { name: COPY.actions.retry }).click();

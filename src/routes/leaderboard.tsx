@@ -24,7 +24,7 @@ function Leaderboard() {
       {q.isPending ? (
         <Skeleton className="h-48" />
       ) : q.isError ? (
-        <ErrorBox action={<button type="button" className="btn gold sm" onClick={() => q.refetch()}>{COPY.actions.retry}</button>}>{COPY.errors.RESOLVER_OFFLINE}</ErrorBox>
+        <ErrorBox action={<button type="button" className="btn gold sm" onClick={() => q.refetch()}>{COPY.actions.retry}</button>}>{COPY.errors.INDEXER_OFFLINE}</ErrorBox>
       ) : rows.length === 0 ? (
         <Empty>{UI.leaderboard.empty}</Empty>
       ) : (
