@@ -5,18 +5,19 @@ import { Link } from "@tanstack/react-router";
 import { useId, useState } from "react";
 import type { BetPanelProps } from "../../contracts/ui.ts";
 import { COPY, UI, fill } from "../common/copy.ts";
-import { parseUsdc, payout, SYMBOL, usdc, usdcUnits, yesPct } from "../common/format.ts";
+import type { ErrorCode } from "../../lib/errors.ts";
+import { parseUsdc, payout, SYMBOL, usdc, yesPct } from "../common/format.ts";
 import { LockIcon, Spinner } from "../common/Spinner.tsx";
 
 const MIN = BigInt(SOT.contract.defaults.minBet);
 const MAX = BigInt(SOT.contract.defaults.maxStakePerUser);
+const FEE_BPS = SOT.contract.defaults.feeBps;
 
 /** Tambahan opsional di luar kontrak ui.ts (semua boleh tidak diisi). */
 export interface BetPanelExtra {
   initialYes?: boolean;
   /** Saldo tUSDC; kalau ada, stake di atas saldo ditolak dengan INSUFFICIENT_USDC. */
   balance?: bigint;
-  feeBps?: number;
   onUnlock?(): void;
   unlocking?: boolean;
   onGetTokens?(): void;
@@ -24,7 +25,7 @@ export interface BetPanelExtra {
 
 export function BetPanel({
   market, remainingCap, account, pending, onStake,
-  initialYes = true, balance, feeBps = SOT.contract.defaults.feeBps, onUnlock, unlocking, onGetTokens,
+  initialYes = true, balance, onUnlock, unlocking, onGetTokens,
 }: BetPanelProps & BetPanelExtra) {
   const [yes, setYes] = useState(initialYes);
   const [text, setText] = useState(String(SOT.frontend.betChipsUsdc[0]));
@@ -34,11 +35,11 @@ export function BetPanel({
   const side = yes ? market.poolYes : market.poolNo;
   const other = yes ? market.poolNo : market.poolYes;
 
-  const error =
+  const error: ErrorCode | null =
     text.trim() === "" ? null
-    : amount === null || amount < MIN ? COPY.errors.AmountTooSmall
-    : amount > remainingCap ? COPY.errors.StakeCapExceeded
-    : balance !== undefined && amount > balance ? COPY.errors.INSUFFICIENT_USDC
+    : amount === null || amount < MIN ? "AmountTooSmall"
+    : amount > remainingCap ? "StakeCapExceeded"
+    : balance !== undefined && amount > balance ? "INSUFFICIENT_USDC"
     : null;
   /** Nominal siap kirim, null kalau tidak valid. */
   const valid = error === null ? amount : null;
@@ -71,7 +72,7 @@ export function BetPanel({
         </div>
         <div className="flex flex-wrap gap-1.5">
           {SOT.frontend.betChipsUsdc.map((c) => (
-            <button key={c} type="button" className="chip" aria-pressed={amount === usdcUnits(c)} onClick={() => setText(String(c))}>
+            <button key={c} type="button" className="chip" aria-pressed={amount === parseUsdc(String(c))} onClick={() => setText(String(c))}>
               {c}
             </button>
           ))}
@@ -81,8 +82,8 @@ export function BetPanel({
         </span>
         {error && (
           <span role="alert" className="flex flex-wrap items-center gap-2 text-sm font-bold text-err-light">
-            {error}
-            {error === COPY.errors.INSUFFICIENT_USDC && onGetTokens && (
+            {COPY.errors[error]}
+            {error === "INSUFFICIENT_USDC" && onGetTokens && (
               <button type="button" className="btn dark sm" onClick={onGetTokens}>{COPY.actions.getTestTokens}</button>
             )}
           </span>
@@ -92,7 +93,7 @@ export function BetPanel({
       <div className="flex flex-col gap-1.5 rounded-control bg-wash px-3.5 py-3 text-[15px]">
         <div className="flex justify-between gap-2.5">
           <span>{UI.stake.ifRight}</span>
-          <b className="text-lg">{usdc(valid !== null ? payout(valid, side, other, feeBps) : 0n, 2)} {SYMBOL}</b>
+          <b className="text-lg">{usdc(valid !== null ? payout(valid, side, other, FEE_BPS) : 0n, 2)} {SYMBOL}</b>
         </div>
         <span className="text-[13px] text-ink-muted">{UI.stake.feeNote}</span>
       </div>

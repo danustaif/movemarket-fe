@@ -1,5 +1,6 @@
 // Klien GraphQL Envio. Query disalin dari backend/indexer/queries.graphql (INDEXER.md bagian 4).
 import { ENUMS, SOT, type IndexedPosition, type LeaderboardRow, type StatusCode } from "@movemarket/shared";
+import { appliedFeeBps, BPS } from "../components/common/format.ts";
 import type { IndexerClient, Position } from "../contracts/data.ts";
 
 const MY_POSITIONS = `query MyPositions($user: String!) {
@@ -50,7 +51,7 @@ export function positionFromIndexed(p: IndexedPosition): Position {
     const [win, winPool] = m.outcome === 1 ? [stakeYes, poolYes] : [stakeNo, poolNo];
     // ponytail: fee dari SOT default karena indexer tidak menyimpan fee pasar; angka pasti dari usePayouts (claimable on-chain).
     const total = poolYes + poolNo;
-    const fee = poolYes > 0n && poolNo > 0n ? (total * BigInt(SOT.contract.defaults.feeBps)) / 10_000n : 0n;
+    const fee = (total * appliedFeeBps(poolYes, poolNo, SOT.contract.defaults.feeBps)) / BPS;
     if (winPool > 0n) claimable = (win * (total - fee)) / winPool;
   }
   return {

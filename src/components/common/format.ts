@@ -22,8 +22,6 @@ export function parseUsdc(s: string): bigint | null {
   return parseUnits(t, DEC);
 }
 
-export const usdcUnits = (whole: number): bigint => parseUnits(String(whole), DEC);
-
 /** Persentase sisi YES (0..100, dibulatkan), null kalau pool kosong. */
 export function yesPct(poolYes: bigint, poolNo: bigint): number | null {
   const total = poolYes + poolNo;
@@ -31,13 +29,16 @@ export function yesPct(poolYes: bigint, poolNo: bigint): number | null {
   return Number((poolYes * 100n + total / 2n) / total);
 }
 
-/** Fee hanya dipotong kalau kedua sisi punya stake (PRODUCT.md). */
-const feeFor = (a: bigint, b: bigint, feeBps: number) => (a > 0n && b > 0n ? BigInt(feeBps) : 0n);
+/** Penyebut basis poin. */
+export const BPS = 10_000n;
+
+/** Fee (bps) yang berlaku: hanya dipotong kalau kedua sisi punya stake (rumus kontrak `_payout`). */
+export const appliedFeeBps = (a: bigint, b: bigint, feeBps: number): bigint => (a > 0n && b > 0n ? BigInt(feeBps) : 0n);
 
 /** Odds tersirat (poolYes+poolNo)*(1-fee)/poolSisi, "x2.88"; "-" kalau pool sisi 0. */
 export function odds(side: bigint, other: bigint, feeBps: number): string {
   if (side === 0n) return "-";
-  const x100 = ((side + other) * (10000n - feeFor(side, other, feeBps)) * 100n) / (10000n * side);
+  const x100 = ((side + other) * (BPS - appliedFeeBps(side, other, feeBps)) * 100n) / (BPS * side);
   return `x${x100 / 100n}.${String(x100 % 100n).padStart(2, "0")}`;
 }
 
@@ -45,7 +46,7 @@ export function odds(side: bigint, other: bigint, feeBps: number): string {
 export function payout(amount: bigint, side: bigint, other: bigint, feeBps: number): bigint {
   if (amount <= 0n) return 0n;
   const s = side + amount;
-  return ((s + other) * (10000n - feeFor(s, other, feeBps)) * amount) / (10000n * s);
+  return ((s + other) * (BPS - appliedFeeBps(s, other, feeBps)) * amount) / (BPS * s);
 }
 
 /** 72 -> "1:12". */

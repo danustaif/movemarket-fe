@@ -168,7 +168,7 @@ function StakeSheet({ row, initialYes, now, gameRef, onClose }: { row: Row; init
         {phase.phase === "open" ? (
           <BetPanel
             market={market} remainingCap={MAX_STAKE - staked} account={acct.status} pending={bet.isPending}
-            initialYes={initialYes} balance={acct.balance} feeBps={FEE_BPS}
+            initialYes={initialYes} balance={acct.balance}
             onUnlock={acct.unlock} unlocking={acct.unlocking} onGetTokens={getTokens}
             onStake={(yes, amount) => bet.mutate({ gameRef, marketId: market.id, yes, amount }, { onSuccess: () => ref.current?.close() })}
           />
