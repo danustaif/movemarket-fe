@@ -1,4 +1,11 @@
 // Helper test DOM: fixture domain, render dalam router memory, dan render aplikasi lengkap dengan QueryClient baru.
+import { spyOn } from "bun:test";
+import { useToasts } from "../../src/components/common/toast.ts";
+import { publicClient } from "../../src/lib/chain.ts";
+import { indexer } from "../../src/lib/envio.ts";
+import { resolver } from "../../src/lib/resolver.ts";
+import { useAccountStore } from "../../src/stores/account.ts";
+import { useSseStore } from "../../src/stores/sse.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createMemoryHistory, createRootRoute, createRoute, createRouter, Outlet, RouterProvider } from "@tanstack/react-router";
 import { render } from "@testing-library/react";
@@ -50,5 +57,28 @@ export function renderApp(path: string, queryClient = new QueryClient({ defaultO
         <RouterProvider router={router} />
       </QueryClientProvider>,
     ),
+  };
+}
+
+// ----------------------------------------------------------------- batas modul (tanpa jaringan)
+
+
+/**
+ * Ganti klien resolver, Envio, dan RPC baca dengan spy berdefault aman. Pulihkan dengan mock.restore() (afterEach).
+ * Store global dikembalikan ke awal: tanpa akun, SSE tertutup, tanpa toast.
+ */
+export function stubBoundaries() {
+  useAccountStore.setState({ status: "none", address: undefined, account: undefined, mismatch: false });
+  useSseStore.setState({ status: "closed", replayStarting: null });
+  useToasts.setState({ items: [] });
+  return {
+    games: spyOn(resolver, "games").mockResolvedValue([]),
+    game: spyOn(resolver, "game").mockRejectedValue(new Error("resolver.game not stubbed")),
+    positions: spyOn(resolver, "positions").mockResolvedValue([]),
+    indexerPositions: spyOn(indexer, "positions").mockRejectedValue(new Error("indexer.positions not stubbed")),
+    leaderboard: spyOn(indexer, "leaderboard").mockResolvedValue([]),
+    readContract: spyOn(publicClient, "readContract").mockRejectedValue(new Error("readContract not stubbed")),
+    multicall: spyOn(publicClient, "multicall").mockRejectedValue(new Error("multicall not stubbed")),
+    getBlock: spyOn(publicClient, "getBlock").mockImplementation((async () => ({ timestamp: BigInt(nowSec()) })) as never),
   };
 }

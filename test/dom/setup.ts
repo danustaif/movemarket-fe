@@ -5,6 +5,10 @@ import { afterEach } from "bun:test";
 
 GlobalRegistrator.register({ url: "http://localhost/" });
 
+// Alamat kontrak palsu (import.meta.env = process.env di Bun), dibaca lib/chain.ts saat dimuat. RPC tetap dimock.
+process.env.VITE_LIVE_MARKET_ADDRESS ||= "0x00000000000000000000000000000000000000c1";
+process.env.VITE_MOCK_USDC_ADDRESS ||= "0x00000000000000000000000000000000000000c2";
+
 // Tidak ada request nyata dari test: resolver, Envio, dan RPC viem harus dimock di batas modul.
 globalThis.fetch = (async (input: RequestInfo | URL) => {
   throw new Error(`network disabled in tests: ${String(input instanceof Request ? input.url : input)}`);
