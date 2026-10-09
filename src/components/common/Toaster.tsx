@@ -23,6 +23,7 @@ function Icon({ kind }: { kind: ToastKind }) {
 /** Di atas tab bar mobile, kanan bawah di desktop. */
 export function Toaster() {
   const items = useToasts((s) => s.items);
+  const dismiss = useToasts((s) => s.dismiss);
   return (
     <div aria-live="polite" className="pointer-events-none fixed inset-x-3 bottom-[76px] z-50 flex flex-col items-stretch gap-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[380px]">
       {items.map((t) => (
@@ -30,7 +31,8 @@ export function Toaster() {
           <Icon kind={t.kind} />
           <span className="flex-1">{t.text}</span>
           {t.action && (
-            <button type="button" className="btn gold sm" onClick={t.action.run}>{t.action.label}</button>
+            // Aksi dijalankan sekali: toast-nya ditutup supaya tidak menawarkan aksi yang sama lagi.
+            <button type="button" className="btn gold sm" onClick={() => { dismiss(t.id); t.action?.run(); }}>{t.action.label}</button>
           )}
         </div>
       ))}
