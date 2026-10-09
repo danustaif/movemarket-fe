@@ -4,7 +4,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { TransactionReceipt } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { COPY } from "../../src/components/common/copy.ts";
+import { COPY, UI, fill } from "../../src/components/common/copy.ts";
 import { qk } from "../../src/contracts/data.ts";
 import { gasLimits, txSenderFor } from "../../src/lib/account/session.ts";
 import { useAccountStore } from "../../src/stores/account.ts";
@@ -88,8 +88,24 @@ describe("/me", () => {
       absent(screen.queryByText(COPY.errors.GAS_NOT_MEASURED));
       const ready = all.parentElement!;
       expect(within(ready).getByText("15.50", { exact: false })).toBeTruthy();
-      await userEvent.setup().click(all);
+      const user = userEvent.setup();
+      await user.click(all);
+      // Konfirmasi dulu: belum ada transaksi sebelum pengguna menekan Claim all di dialog.
+      const dialog = await screen.findByRole("dialog", { name: fill(UI.me.claimAllTitle, { amount: "15.50" }) });
+      expect(within(dialog).getByText(fill(UI.me.claimAllNote, { n: 2 }))).toBeTruthy();
+      expect(liveMarket).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole("button", { name: COPY.actions.claimAll }));
       await waitFor(() => expect(liveMarket).toHaveBeenCalledWith("claimMany", [[7n, 8n]]));
+    });
+
+    test("Cancel in the Claim all dialog sends nothing", async () => {
+      renderMe();
+      const user = userEvent.setup();
+      await user.click(await claimAll());
+      const dialog = await screen.findByRole("dialog");
+      await user.click(within(dialog).getByRole("button", { name: UI.stake.cancel }));
+      await waitFor(() => absent(screen.queryByRole("dialog")));
+      expect(liveMarket).not.toHaveBeenCalled();
     });
   });
 });

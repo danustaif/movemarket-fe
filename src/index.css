@@ -116,6 +116,7 @@
   /* Lembar stake: bottom sheet di layar sempit, dialog di desktop (DESIGN.md "Stake sheet"). */
   dialog.sheet { padding: 0; border: 0; width: 100%; max-width: 520px; max-height: 92vh; margin: auto auto 0; border-radius: 8px 8px 0 0; background: #fff; color: var(--color-ink); box-shadow: 0 24px 60px rgb(0 0 0 / .4); }
   dialog.sheet::backdrop { background: rgb(4 20 18 / .62); }
+  dialog.sheet.dark { background: var(--color-deep); color: #fff; }
   @media (min-width: 640px) { dialog.sheet { margin: auto; border-radius: var(--radius-panel); } }
 
   .spin { animation: mmspin .9s linear infinite; }

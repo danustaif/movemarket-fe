@@ -1,8 +1,10 @@
 // Komponen route meRoute (dimuat lazy lewat lazyRouteComponent).
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { COPY, UI } from "../components/common/copy.ts";
+import { useState } from "react";
+import { COPY, UI, fill } from "../components/common/copy.ts";
 import { SYMBOL, usdc, usdcOrDash } from "../components/common/format.ts";
+import { Modal } from "../components/common/Modal.tsx";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { Empty, ErrorBox, Skeleton } from "../components/common/States.tsx";
 import { useNowSec } from "../components/common/useNowSec.ts";
@@ -43,6 +45,7 @@ function Positions() {
   const getTokens = useGetTokens();
   /** Gas claimMany belum diukur di SOT: Claim all nonaktif, klaim per pasar tetap bisa. */
   const claimAllReady = canSend("claimMany");
+  const [confirmAll, setConfirmAll] = useState(false);
 
   const rows = (q.data ?? []).map((p) => ({ p, phase: positionPhase(p, now) }));
   // Claim/Refund hanya aktif dari angka di blok finalized (SOT D20), lewat usePayouts F1.
@@ -72,13 +75,42 @@ function Positions() {
             type="button" className={`btn dark sm mt-1.5 self-start ${claimMany.isPending ? "busy" : ""}`}
             disabled={claimable.length === 0 || claimMany.isPending || !claimAllReady}
             aria-describedby={claimAllReady ? undefined : "claim-all-note"}
-            onClick={() => claimMany.mutate({ marketIds: claimable.map(({ p }) => p.marketId) })}
+            onClick={() => setConfirmAll(true)}
           >
             {claimMany.isPending && <Spinner size={16} />}{COPY.actions.claimAll}
           </button>
           {!claimAllReady && claimable.length > 0 && <span id="claim-all-note" className="text-sm font-semibold">{COPY.errors.GAS_NOT_MEASURED}</span>}
         </div>
       </div>
+
+      {confirmAll && (
+        <Modal labelledBy="ca-h" onClose={() => setConfirmAll(false)}>
+          <div className="flex flex-col gap-3.5 p-4.5">
+            <h2 id="ca-h" className="display m-0 text-[28px]">{fill(UI.me.claimAllTitle, { amount: usdc(claimSum) })}</h2>
+            <ul className="m-0 flex list-none flex-col gap-1 p-0">
+              {claimable.map(({ p }) => (
+                <li key={String(p.marketId)} className="flex justify-between gap-2.5 rounded-[3px] bg-wash px-2.5 py-2">
+                  <span className="min-w-0">{question(p.gameRef, p.marketId) ?? `#${p.marketId}`}</span>
+                  <b className="whitespace-nowrap">{usdc(payouts.data?.[String(p.marketId)]?.claimable ?? p.claimable)}</b>
+                </li>
+              ))}
+            </ul>
+            <span className="text-sm text-ink-muted">{fill(UI.me.claimAllNote, { n: claimable.length })}</span>
+            <div className="flex gap-2.5">
+              <button type="button" className="btn ghostd flex-1" onClick={() => setConfirmAll(false)}>{UI.stake.cancel}</button>
+              <button
+                type="button" className="btn gold flex-[2]"
+                onClick={() => {
+                  setConfirmAll(false);
+                  claimMany.mutate({ marketIds: claimable.map(({ p }) => p.marketId) });
+                }}
+              >
+                {COPY.actions.claimAll}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {q.isPending ? (
         <div className="flex flex-col gap-1.5"><Skeleton className="h-16" /><Skeleton className="h-16" /></div>
