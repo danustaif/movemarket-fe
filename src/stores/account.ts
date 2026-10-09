@@ -5,13 +5,19 @@ import { accountService } from "../lib/account/mera.ts";
 
 const lockedState = () => {
   const m = accountService.marker();
-  return { status: m ? ("locked" as const) : ("none" as const), address: m?.address, account: undefined };
+  return { status: m ? ("locked" as const) : ("none" as const), address: m?.address, account: undefined, mismatch: false };
 };
 
 export const useAccountStore = create<AccountState>()((set) => ({
   ...lockedState(),
-  setUnlocked: (account) => set({ status: "unlocked", account, address: account.address }),
+  setUnlocked: (account) => set({ status: "unlocked", account, address: account.address, mismatch: false }),
   lock: () => {
+    accountService.end();
+    set(lockedState());
+  },
+  markMismatch: () => set({ mismatch: true }),
+  startOver: () => {
+    accountService.clearMarker();
     accountService.end();
     set(lockedState());
   },

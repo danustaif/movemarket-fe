@@ -1,12 +1,13 @@
 // Sambungan route ke hook F1 (queries/, mutations/, stores/). Di sini hanya komposisi untuk tampilan:
 // view model akun, banner status, dan toast error. Logika data tetap di lapisan F1.
 import type { UseMutationResult } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { Address } from "viem";
 import { create } from "zustand";
-import { UI } from "../components/common/copy.ts";
+import { COPY, UI } from "../components/common/copy.ts";
 import { toast } from "../components/common/toast.ts";
-import { errorMessage } from "../lib/errors.ts";
+import { errorCode, errorMessage } from "../lib/errors.ts";
 import { useBet as useBetRaw, useCreateAccount, useClaim as useClaimRaw, useClaimMany as useClaimManyRaw, useRefund as useRefundRaw, useUnlockAccount } from "../mutations/index.ts";
 import { useBalance, useChainTime, useGames, usePositions as usePositionsRaw } from "../queries/index.ts";
 import { useAccountStore } from "../stores/account.ts";
@@ -46,14 +47,29 @@ useAccountStore.subscribe((s, prev) => {
 export function useAccountView() {
   const status = useAccountStore((s) => s.status);
   const address = useAccountStore((s) => s.address);
+  const mismatch = useAccountStore((s) => s.mismatch);
   const balance = useBalance(status === "unlocked" ? address : undefined).data;
   const unlock = useUnlockAccount();
+  const navigate = useNavigate();
+  /** ACCOUNT_MISMATCH: akun itu tidak dipakai; mulai dari awal di /onboarding (USER_FLOW bagian 8). */
+  const startOver = () => {
+    useAccountStore.getState().startOver();
+    void navigate({ to: "/onboarding" });
+  };
   return {
     status,
     address,
     balance,
+    mismatch,
+    startOver,
     unlocking: unlock.isPending,
-    unlock: () => unlock.mutate(undefined, { onError: toastError }),
+    unlock: () =>
+      unlock.mutate(undefined, {
+        onError: (err) =>
+          errorCode(err) === "ACCOUNT_MISMATCH"
+            ? toast("error", COPY.errors.ACCOUNT_MISMATCH, { label: COPY.actions.createAccount, run: startOver })
+            : toastError(err),
+      }),
   };
 }
 

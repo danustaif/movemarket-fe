@@ -43,8 +43,13 @@ export interface AccountState {
   status: "none" | "locked" | "unlocked";
   address?: Address;
   account?: LocalAccount;
+  /** Unlock terakhir menghasilkan ACCOUNT_MISMATCH: akun itu tidak dipakai, UI menawarkan akun baru. */
+  mismatch: boolean;
   setUnlocked(a: LocalAccount): void;
   lock(): void;
+  markMismatch(): void;
+  /** Hapus marker dan kembali ke status "none" supaya /onboarding membuat akun baru (USER_FLOW bagian 8). */
+  startOver(): void;
 }
 
 // ----------------------------------------------------------------- transaksi

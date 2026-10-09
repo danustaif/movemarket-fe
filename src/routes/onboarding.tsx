@@ -4,6 +4,7 @@ import { COPY, UI } from "../components/common/copy.ts";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { ErrorBox } from "../components/common/States.tsx";
 import { errorMessage } from "../lib/errors.ts";
+import { useAccountStore } from "../stores/account.ts";
 import { rootRoute } from "./__root.tsx";
 import { useAccountView, useCreateAccount } from "./-wiring.ts";
 
@@ -22,7 +23,8 @@ function Onboarding() {
   const done = create.isSuccess || (acct.status === "unlocked" && !create.isPending && !create.isError);
   // Langkah aktif dari useCreateAccount F1: passkey -> faucet -> approve -> done.
   const active = done ? 3 : create.step ? ["passkey", "faucet", "approve", "done"].indexOf(create.step) : -1;
-  const err = create.error ? (errorMessage(create.error) ?? UI.generic.error) : null;
+  const err = create.error ? (errorMessage(create.error) ?? UI.generic.error)
+    : acct.status === "locked" && acct.mismatch ? COPY.errors.ACCOUNT_MISMATCH : null;
 
   return (
     <section aria-labelledby="onb-h" className="mx-auto flex max-w-[560px] flex-col gap-4.5">
@@ -55,9 +57,16 @@ function Onboarding() {
             <button type="button" className="btn gold lg" onClick={() => navigate({ to: "/" })}>{UI.home.watch}</button>
           </>
         ) : acct.status === "locked" ? (
-          <button type="button" className={`btn gold lg ${acct.unlocking ? "busy" : ""}`} onClick={acct.unlock} disabled={acct.unlocking}>
-            {acct.unlocking ? <Spinner /> : <LockIcon />}{COPY.actions.unlock}
-          </button>
+          <>
+            {acct.mismatch && (
+              <button type="button" className="btn gold lg" onClick={() => { useAccountStore.getState().startOver(); create.mutate(); }}>
+                {COPY.actions.createAccount}
+              </button>
+            )}
+            <button type="button" className={`btn ${acct.mismatch ? "ghost" : "gold"} lg ${acct.unlocking ? "busy" : ""}`} onClick={acct.unlock} disabled={acct.unlocking}>
+              {acct.unlocking ? <Spinner /> : <LockIcon />}{COPY.actions.unlock}
+            </button>
+          </>
         ) : (
           <button type="button" className={`btn gold lg ${create.isPending ? "busy" : ""}`} onClick={() => create.mutate()} disabled={create.isPending}>
             {create.isPending && <Spinner size={20} />}

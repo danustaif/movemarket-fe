@@ -82,6 +82,9 @@ export function useUnlockAccount() {
     mutationFn: async () => {
       useAccountStore.getState().setUnlocked(await accountService.unlock());
     },
+    onError: (err) => {
+      if (errorCode(err) === "ACCOUNT_MISMATCH") useAccountStore.getState().markMismatch();
+    },
   });
 }
 
