@@ -33,9 +33,9 @@ export function VerticalPoolBar({ poolYes, poolNo }: { poolYes: bigint; poolNo: 
 
 /**
  * `onPick` (tambahan opsional di luar kontrak ui.ts): dipanggil saat pengguna memilih Yes/No pada pasar Open.
- * Tanpa `onPick`, tombol Yes/No tidak tampil.
+ * Tanpa `onPick`, tombol Yes/No tidak tampil. `onDetails`: tombol Details (pasar yang sudah terkunci, sesuai prototype).
  */
-export function MarketCard({ market, phase, position, feeBps, onPick }: MarketCardProps & { onPick?(yes: boolean): void }) {
+export function MarketCard({ market, phase, position, feeBps, onPick, onDetails }: MarketCardProps & { onPick?(yes: boolean): void; onDetails?(): void }) {
   const { poolYes, poolNo } = market;
   const pct = yesPct(poolYes, poolNo);
   const mine = position ? position.stakeYes + position.stakeNo : 0n;
@@ -49,7 +49,9 @@ export function MarketCard({ market, phase, position, feeBps, onPick }: MarketCa
     >
       <div className="flex items-center justify-between gap-2.5">
         <OutcomeBadge phase={phase} />
-        <span className="text-right text-sm text-muted">{fill(UI.market.pooled, { amount: usdc(poolYes + poolNo) })}</span>
+        {onDetails && !open
+          ? <button type="button" className="link min-h-11 text-sm" onClick={onDetails}>{UI.market.details}</button>
+          : <span className="text-right text-sm text-muted">{fill(UI.market.pooled, { amount: usdc(poolYes + poolNo) })}</span>}
       </div>
 
       <h3 className={`m-0 font-extrabold ${open ? "text-xl leading-[1.3]" : "text-base leading-[1.3]"}`}>{market.question}</h3>

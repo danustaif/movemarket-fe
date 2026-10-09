@@ -12,6 +12,7 @@ import { BetPanel } from "../components/market/BetPanel.tsx";
 import { Countdown } from "../components/market/Countdown.tsx";
 import { LowerThird } from "../components/market/LowerThird.tsx";
 import { MarketCard, VerticalPoolBar } from "../components/market/MarketCard.tsx";
+import { MarketDetail } from "../components/market/MarketDetail.tsx";
 import { OutcomeBadge } from "../components/market/OutcomeBadge.tsx";
 import type { Market, MarketPhase, Position } from "../contracts/data.ts";
 import { deriveMarketPhase, IN_PLAY, isClosingSoon, SETTLED } from "../lib/marketPhase.ts";
@@ -43,6 +44,7 @@ export function GamePage() {
   const acct = useAccountView();
   const positions = usePositions(acct.address);
   const [pick, setPick] = useState<{ id: bigint; yes: boolean } | null>(null);
+  const [detailId, setDetailId] = useState<bigint | null>(null);
 
   // FEN sebelumnya untuk sorotan langkah terakhir (state disesuaikan saat render, tanpa effect).
   const fen = game.data?.game.fen;
@@ -76,6 +78,7 @@ export function GamePage() {
   const lastSan = g.sans.at(-1);
   const recent = g.sans.slice(-8).map((san, i, a) => ({ san, ply: g.ply - a.length + 1 + i }));
   const picked = pick ? rows.find((r) => r.market.id === pick.id) : undefined;
+  const detail = detailId === null ? undefined : rows.find((r) => r.market.id === detailId);
   // Pasar yang paling cepat terkunci menjadi lower third; sisanya tetap di daftar Open now.
   const [pinned, ...restOpen] = open;
 
@@ -119,10 +122,10 @@ export function GamePage() {
             ))}
           </Section>
           <Section id="mp-h" title={UI.game.inPlay} count={inPlay.length} empty={UI.game.noInPlay}>
-            {inPlay.map((r) => <MarketCard key={String(r.market.id)} {...r} feeBps={FEE_BPS} />)}
+            {inPlay.map((r) => <MarketCard key={String(r.market.id)} {...r} feeBps={FEE_BPS} onDetails={() => setDetailId(r.market.id)} />)}
           </Section>
           <Section id="mr-h" title={UI.game.results} count={done.length} empty={UI.game.noResults}>
-            {done.map((r) => <MarketCard key={String(r.market.id)} {...r} feeBps={FEE_BPS} />)}
+            {done.map((r) => <MarketCard key={String(r.market.id)} {...r} feeBps={FEE_BPS} onDetails={() => setDetailId(r.market.id)} />)}
           </Section>
         </div>
       </div>
@@ -133,6 +136,8 @@ export function GamePage() {
           onPick={(yes) => setPick({ id: pinned.market.id, yes })}
         />
       )}
+
+      {detail && <MarketDetail {...detail} feeBps={FEE_BPS} onClose={() => setDetailId(null)} />}
 
       {pick && picked && (
         <StakeSheet row={picked} initialYes={pick.yes} now={now} gameRef={gameRef} onClose={() => setPick(null)} />

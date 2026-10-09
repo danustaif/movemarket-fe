@@ -74,7 +74,7 @@ describe("/game/$gameRef", () => {
     expect(within(sheet).getByRole("alert").textContent).toBe(COPY.errors.BettingClosed);
     const inPlay = screen.getByRole("region", { name: new RegExp(`^${UI.game.inPlay}`) });
     expect(within(inPlay).getByRole("article", { name: QUESTION })).toBeTruthy();
-    expect(within(card()).queryAllByRole("button").length).toBe(0);
+    expect(within(card()).queryAllByRole("button", { name: new RegExp(`^(${UI.market.yes}|${UI.market.no})`) })).toHaveLength(0);
     disconnect();
   });
 
@@ -125,5 +125,43 @@ describe("/game/$gameRef", () => {
     // Pool bar vertikal di samping papan mengikuti pasar yang di-pin.
     const yes = `${UI.market.yes} ${fill(UI.market.poolShare, { pct: 75 })}`;
     expect(screen.getByRole("img", { name: new RegExp(`^${yes}`) })).toBeTruthy();
+  });
+
+  test("Details opens the market dialog: window, pools, timeline and the CRE report link", async () => {
+    const tx = "0xabcd00000000000000000000000000000000000000000000000000000000beef" as const;
+    b.game.mockResolvedValue(game([market({
+      id: 7n, question: QUESTION, lockTime: nowSec() - 300, poolYes: 3_000_000n, poolNo: 1_000_000n,
+      provisional: "YES", final: "YES", finalTx: tx,
+    })], { ply: 40 }));
+    const user = userEvent.setup();
+    renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    const results = await screen.findByRole("region", { name: new RegExp(`^${UI.game.results}`) });
+    await user.click(within(results).getByRole("button", { name: UI.market.details }));
+
+    const dialog = await screen.findByRole("dialog", { name: QUESTION });
+    expect(within(dialog).getByText(fill(UI.detail.window, { fromPly: 33, toPly: 36 }))).toBeTruthy();
+    expect(within(dialog).getByText("3.00")).toBeTruthy();
+    expect(within(dialog).getByText("1.00")).toBeTruthy();
+    const steps = within(within(dialog).getByRole("list", { name: UI.detail.timeline })).getAllByRole("listitem");
+    expect(steps).toHaveLength(4);
+    expect(steps.every((li) => li.textContent!.includes(UI.detail.done))).toBe(true);
+    expect(steps[3]!.textContent).toContain(fill(COPY.market.status.final, { outcome: COPY.market.outcome.YES }));
+    const link = within(steps[3]!).getByRole("link", { name: fill(UI.market.finalTx, { tx: "0xabcd…beef" }) });
+    expect(link.getAttribute("href")).toContain(`/tx/${tx}`);
+
+    await user.click(within(dialog).getAllByRole("button", { name: UI.stake.close }).at(-1)!);
+    await waitFor(() => absent(screen.queryByRole("dialog")));
+  });
+
+  test("Details on a locked market: lock done, provisional and final still pending", async () => {
+    b.game.mockResolvedValue(game([market({ id: 7n, question: QUESTION, lockTime: nowSec() - 30, poolYes: 1_000_000n })], { ply: 30 }));
+    const user = userEvent.setup();
+    renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    const inPlay = await screen.findByRole("region", { name: new RegExp(`^${UI.game.inPlay}`) });
+    await user.click(within(inPlay).getByRole("button", { name: UI.market.details }));
+    const dialog = await screen.findByRole("dialog", { name: QUESTION });
+    const steps = within(dialog).getAllByRole("listitem");
+    expect(steps.map((li) => li.textContent!.includes(UI.detail.done))).toEqual([true, true, false, false]);
+    expect(steps[3]!.textContent).toContain(UI.detail.final);
   });
 });
