@@ -48,6 +48,10 @@ describe("IndexerClient", () => {
     expect(sent!.query).toContain("MyPositions");
     expect(rows).toHaveLength(1);
   });
+  test("leaderboard converts netProfit to bigint at the boundary", async () => {
+    const f = (async () => new Response(JSON.stringify({ data: { User: [{ id: "0xaa", netProfit: "-2500000", betCount: 3, winCount: 1 }] } }))) as unknown as typeof fetch;
+    expect(await createIndexerClient("http://envio", f).leaderboard()).toEqual([{ address: "0xaa", netProfit: -2_500_000n, betCount: 3, winCount: 1 }]);
+  });
   test("GraphQL errors throw", async () => {
     const f = (async () => new Response(JSON.stringify({ errors: [{ message: "bad" }] }))) as unknown as typeof fetch;
     await expect(createIndexerClient("http://envio", f).leaderboard()).rejects.toThrow("bad");

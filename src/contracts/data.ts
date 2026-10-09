@@ -1,7 +1,7 @@
 // Kontrak lapisan data frontend: model domain (bigint), klien resolver/indexer, query key, SSE ke cache.
 // Spesifikasi: source/docs/FRONTEND.md bagian 4 sampai 7.
 import type {
-  FinalOutcome, GameDetail, GameSummary, IndexedPosition, LeaderboardRow, MarketDto, PositionDto, SseEvents, VoidReasonCode,
+  FinalOutcome, GameDetail, GameSummary, IndexedPosition, MarketDto, PositionDto, SseEvents, VoidReasonCode,
 } from "@movemarket/shared";
 import type { Address, Hex } from "viem";
 
@@ -41,10 +41,18 @@ export interface ResolverClient {
   faucetGas(address: Address): Promise<{ monTx: Hex }>;
 }
 
+/** Baris peringkat dengan nominal bigint (LeaderboardRow wire dikonversi di lib/envio.ts). */
+export interface Leader {
+  address: string;
+  netProfit: bigint;
+  betCount: number;
+  winCount: number;
+}
+
 /** lib/envio.ts. Query di backend/indexer/queries.graphql. Cadangan posisi: ResolverClient.positions. */
 export interface IndexerClient {
   positions(address: Address): Promise<IndexedPosition[]>;
-  leaderboard(): Promise<LeaderboardRow[]>;
+  leaderboard(): Promise<Leader[]>;
 }
 
 // ----------------------------------------------------------------- query key (queries/keys.ts)

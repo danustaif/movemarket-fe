@@ -52,13 +52,7 @@ export const allowanceQuery = (address: Address) =>
 export const leaderboardQuery = () =>
   queryOptions({
     queryKey: qk.leaderboard(),
-    queryFn: async (): Promise<QueryData["useLeaderboard"]> =>
-      (await indexer.leaderboard()).map((r) => ({
-        address: r.id,
-        netProfit: BigInt(r.netProfit),
-        betCount: r.betCount,
-        winCount: r.winCount,
-      })),
+    queryFn: (): Promise<QueryData["useLeaderboard"]> => indexer.leaderboard(),
     staleTime: 30_000,
   });
 

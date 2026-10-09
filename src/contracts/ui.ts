@@ -2,7 +2,7 @@
 // bagian 2, 4, 5, 8; desain visual: source/DESIGN.md dan source/design/prototype/. Teks dari COPY.
 import type { GameSummary } from "@movemarket/shared";
 import type { TransactionReceipt } from "viem";
-import type { Game, Market, MarketPhase, Position } from "./data.ts";
+import type { Game, Leader, Market, MarketPhase, Position } from "./data.ts";
 
 // ----------------------------------------------------------------- route (TanStack Router)
 
@@ -24,7 +24,7 @@ export interface QueryData {
   usePositions: Position[];              // Envio, cadangan resolver, staleTime 10 s
   useBalance: bigint;                    // MockUSDC.balanceOf, staleTime 5 s
   useAllowance: bigint;                  // MockUSDC.allowance, staleTime 30 s
-  useLeaderboard: { address: string; netProfit: bigint; betCount: number; winCount: number }[];
+  useLeaderboard: Leader[];
   useChainTime: number;                  // offset detik chain - lokal
 }
 

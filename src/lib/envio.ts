@@ -31,7 +31,10 @@ export function createIndexerClient(url: string, fetchImpl: typeof fetch = (...a
   return {
     positions: async (address) =>
       (await gql<{ Position: IndexedPosition[] }>(MY_POSITIONS, { user: address.toLowerCase() })).Position,
-    leaderboard: async () => (await gql<{ User: LeaderboardRow[] }>(LEADERBOARD)).User,
+    leaderboard: async () =>
+      (await gql<{ User: LeaderboardRow[] }>(LEADERBOARD)).User.map((r) => ({
+        address: r.id, netProfit: BigInt(r.netProfit), betCount: r.betCount, winCount: r.winCount,
+      })),
   };
 }
 
