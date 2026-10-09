@@ -4,6 +4,7 @@ import type { MarketCardProps } from "../../contracts/ui.ts";
 import { SETTLED } from "../../lib/marketPhase.ts";
 import { COPY, UI, fill } from "../common/copy.ts";
 import { odds, usdc, yesPct } from "../common/format.ts";
+import { TxLink } from "../common/TxLink.tsx";
 import { OutcomeBadge } from "./OutcomeBadge.tsx";
 
 export function PoolBar({ poolYes, poolNo }: { poolYes: bigint; poolNo: bigint }) {
@@ -62,6 +63,7 @@ export function MarketCard({ market, phase, position, feeBps, onPick }: MarketCa
             <span className="font-extrabold text-coral">{UI.market.no} {usdc(poolNo)}</span>
           </span>
           {phase.phase === "provisional" && <span className="text-soft">{COPY.errors.FINAL_PENDING}</span>}
+          {phase.phase === "final" && market.finalTx && <TxLink hash={market.finalTx} />}
         </div>
       )}
 

@@ -14,6 +14,8 @@ export type Market = Omit<MarketDto, "id" | "poolYes" | "poolNo"> & {
   gameRef: string;
   poolYes: bigint;
   poolNo: bigint;
+  /** Tx report CRE dari SSE `finalized` (GET /games belum membawanya, jadi hanya ada untuk final selama sesi). */
+  finalTx?: Hex | null;
 };
 
 export interface Game {
@@ -26,6 +28,8 @@ export type Position = Omit<PositionDto, "marketId" | "stakeYes" | "stakeNo" | "
   stakeYes: bigint;
   stakeNo: bigint;
   claimable: bigint;
+  /** Tx report CRE dari indexer (`Market.resolvedTx`); cadangan resolver tidak membawanya. */
+  finalTx?: Hex | null;
 };
 
 // ----------------------------------------------------------------- klien

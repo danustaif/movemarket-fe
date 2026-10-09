@@ -34,7 +34,7 @@ export const sseReducers: SseReducers = {
   },
   pool: (g, d) => g && mapMarket(g, d.marketId, (m) => ({ ...m, poolYes: BigInt(d.poolYes), poolNo: BigInt(d.poolNo) })),
   provisional: (g, d) => g && mapMarket(g, d.marketId, (m) => ({ ...m, provisional: d.outcome })),
-  finalized: (g, d) => g && mapMarket(g, d.marketId, (m) => ({ ...m, final: d.outcome, voidReason: d.voidReason })),
+  finalized: (g, d) => g && mapMarket(g, d.marketId, (m) => ({ ...m, final: d.outcome, voidReason: d.voidReason, finalTx: d.txHash })),
   replay_starting: (g) => g,
   ping: (g) => g,
 };

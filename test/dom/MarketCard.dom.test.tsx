@@ -66,3 +66,17 @@ describe("MarketCard Yes/No", () => {
     expect(within(at.el).getByText(S.locked)).toBeTruthy();
   });
 });
+
+describe("MarketCard CRE report link", () => {
+  const tx = "0xabc1000000000000000000000000000000000000000000000000000000003456" as const;
+  test("final with a report tx links to the explorer", () => {
+    const { el } = card({ phase: "final", outcome: "YES" }, market({ final: "YES", finalTx: tx }));
+    const link = within(el).getByRole("link", { name: fill(UI.market.finalTx, { tx: "0xabc1…3456" }) });
+    expect(link.getAttribute("href")).toBe(`${SOT.network.explorer}/tx/${tx}`);
+    expect(link.getAttribute("target")).toBe("_blank");
+  });
+  test("no link without a tx hash", () => {
+    const { el } = card({ phase: "final", outcome: "YES" }, market({ final: "YES" }));
+    expect(within(el).queryAllByRole("link")).toHaveLength(0);
+  });
+});

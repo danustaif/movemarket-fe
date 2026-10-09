@@ -4,6 +4,7 @@ import { REFUNDABLE } from "../../lib/marketPhase.ts";
 import { COPY, UI, fill } from "../common/copy.ts";
 import { SYMBOL, usdc } from "../common/format.ts";
 import { Spinner } from "../common/Spinner.tsx";
+import { TxLink } from "../common/TxLink.tsx";
 import { OutcomeBadge } from "../market/OutcomeBadge.tsx";
 
 /**
@@ -23,6 +24,7 @@ export function PositionRow({ position, phase, onClaim, onRefund, question, busy
         <span className="text-sm text-soft">
           {fill(UI.me.stakeLine, { yes: usdc(position.stakeYes), no: usdc(position.stakeNo) })}
         </span>
+        {phase.phase === "final" && position.finalTx && <TxLink hash={position.finalTx} className="self-start" />}
       </div>
       {canClaim && (
         <button type="button" className={`btn gold sm ${busy ? "busy" : ""}`} onClick={onClaim} disabled={busy}>

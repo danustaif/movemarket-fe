@@ -63,4 +63,11 @@ describe("PositionRow", () => {
     row(position({ stakeYes: 1_000_001n, stakeNo: 20_000_000n }), { phase: "locked" });
     expect(screen.getByText(fill(UI.me.stakeLine, { yes: "1.000001", no: "20.00" }))).toBeTruthy();
   });
+
+  test("final position links the indexed CRE report tx", () => {
+    const tx = "0x1234000000000000000000000000000000000000000000000000000000abcdef" as const;
+    row({ ...won, finalTx: tx }, { phase: "final", outcome: "YES" });
+    const link = screen.getByRole("link", { name: fill(UI.market.finalTx, { tx: "0x1234…cdef" }) });
+    expect(link.getAttribute("href")).toBe(`${SOT.network.explorer}/tx/${tx}`);
+  });
 });

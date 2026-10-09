@@ -31,6 +31,10 @@ describe("positionFromIndexed", () => {
     expect(positionFromIndexed(pos({}, { status: "VOIDED", outcome: 3, voidReason: 2 })).voidReason).toBe(2);
     expect(positionFromIndexed(pos()).voidReason).toBeNull();
   });
+  test("carries the indexed CRE report tx (resolvedTx) as finalTx", () => {
+    expect(positionFromIndexed(pos({}, { resolvedTx: "0xfeed" })).finalTx).toBe("0xfeed");
+    expect(positionFromIndexed(pos()).finalTx).toBeNull();
+  });
 });
 
 describe("IndexerClient", () => {

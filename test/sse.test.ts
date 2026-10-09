@@ -52,6 +52,10 @@ describe("sseReducers", () => {
     const f = r.finalized(p, { gameRef, marketId: "7", outcome: "VOID", voidReason: 2, txHash: "0x01" })!;
     expect(f.markets[0]).toMatchObject({ provisional: "YES", final: "VOID", voidReason: 2 });
   });
+  test("finalized keeps the CRE report tx hash for the explorer link", () => {
+    const f = r.finalized(game(), { gameRef, marketId: "7", outcome: "YES", voidReason: null, txHash: "0xabc123" })!;
+    expect(f.markets[0]!.finalTx).toBe("0xabc123");
+  });
   test("events for other markets leave the game untouched", () => {
     const g = game();
     expect(r.pool(g, { gameRef, marketId: "99", poolYes: "1", poolNo: "1" })!.markets).toEqual(g.markets);

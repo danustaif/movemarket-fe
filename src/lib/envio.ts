@@ -66,6 +66,7 @@ export function positionFromIndexed(p: IndexedPosition): Position {
     settled: p.settled,
     claimable,
     voidReason: m.voidReason,
+    finalTx: m.resolvedTx,
   };
 }
 
