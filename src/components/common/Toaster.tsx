@@ -9,13 +9,13 @@ const look: Record<ToastKind, string> = {
 };
 
 function Icon({ kind }: { kind: ToastKind }) {
-  if (kind === "pending") return <Spinner size={20} accent="#f2c14e" />;
-  if (kind === "error") return <AlertIcon color="#ff9c94" />;
-  if (kind === "info") return <AlertIcon color="#a9c7c2" />;
+  if (kind === "pending") return <Spinner size={20} accent="text-gold" />;
+  if (kind === "error") return <AlertIcon className="text-err-icon" />;
+  if (kind === "info") return <AlertIcon className="text-muted" />;
   return (
     <svg className="flex-none" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#f2c14e" />
-      <path d="M7.5 12.5l3 3 6-7" stroke="#082a26" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle className="fill-gold" cx="12" cy="12" r="10" />
+      <path className="stroke-ink" d="M7.5 12.5l3 3 6-7" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

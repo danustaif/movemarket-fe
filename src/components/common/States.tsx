@@ -11,11 +11,11 @@ export function Empty({ children, action }: { children: ReactNode; action?: Reac
   );
 }
 
-/** Error di atas teal: permukaan #3b1416, teks #ffd2cf. */
+/** Error di atas teal (DESIGN.md "Error colors"): token err-surface, err-text, err-icon. */
 export function ErrorBox({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div role="alert" className="flex flex-wrap items-center gap-3 rounded-panel bg-err-surface px-4 py-3.5 text-err-text shadow-[inset_0_0_0_1px_var(--color-err-line)]">
-      <AlertIcon color="#ff9c94" />
+      <AlertIcon className="text-err-icon" />
       <span className="flex-[1_1_220px] font-semibold">{children}</span>
       {action}
     </div>

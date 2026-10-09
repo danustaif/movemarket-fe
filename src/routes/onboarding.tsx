@@ -37,7 +37,7 @@ function Onboarding() {
         {UI.onboarding.steps.map((step, i) => {
           const state = i < active ? "done" : i === active && create.isPending ? "busy" : i === active && create.isError ? "fail" : "todo";
           return (
-            <li key={step} aria-current={state === "busy" ? "step" : undefined} className="flex items-center gap-3.5 border-t border-[#1d5a51] p-4 first:border-t-0">
+            <li key={step} aria-current={state === "busy" ? "step" : undefined} className="flex items-center gap-3.5 border-t border-divider p-4 first:border-t-0">
               <span className={`inline-flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full text-[15px] font-extrabold ${
                 state === "done" ? "bg-gold text-ink" : state === "busy" ? "bg-soft text-ink" : state === "fail" ? "bg-err-surface text-err-text" : "bg-deep text-muted"}`}>
                 {state === "done" ? <Check /> : state === "busy" ? <Spinner size={16} /> : i + 1}

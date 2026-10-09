@@ -41,7 +41,7 @@ function Leaderboard() {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.address} className="border-t border-[#1d5a51]">
+                <tr key={r.address} className="border-t border-divider">
                   <td className="px-3.5 py-2.5 font-extrabold">{i + 1}</td>
                   <td className="px-3.5 py-2.5 font-bold">{shortAddr(r.address)}</td>
                   <td className={`px-3.5 py-2.5 text-right font-extrabold ${r.netProfit < 0n ? "text-coral" : "text-gold"}`}>

@@ -24,6 +24,13 @@
   --color-err-text: #ffd2cf;
   --color-err-line: #7a2a2d;
   --color-err-light: #b0261f;
+  --color-err-icon: #ff9c94;
+  --color-err-wash: #fde7e5;
+  --color-err-ink: #6b1410;
+  --color-divider: #1d5a51;
+  --color-piece-white: #f1ecdf;
+  --color-piece-black: #1c2322;
+  --color-piece-edge: #5d8580;
   --color-board-light: #eeeed2;
   --color-board-dark: #5f9f8f;
   --color-board-last-light: #f5f08a;

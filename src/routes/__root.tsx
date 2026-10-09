@@ -88,7 +88,7 @@ function Layout() {
 
       <footer className="mx-auto box-border w-full max-w-[1380px] px-4 pt-3.5 pb-6 text-[13px] text-muted sm:px-7">{UI.footer}</footer>
 
-      <nav aria-label={UI.nav.label} className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_#1d5a51] sm:hidden">
+      <nav aria-label={UI.nav.label} className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_var(--color-divider)] sm:hidden">
         {NAV.map((n) => (
           <Link key={n.to} to={n.to} className="tab" activeOptions={{ exact: n.to === "/" }} activeProps={{ "aria-current": "page" }}>
             {n.label}

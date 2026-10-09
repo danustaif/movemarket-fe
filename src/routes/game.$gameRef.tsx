@@ -173,7 +173,7 @@ function StakeSheet({ row, initialYes, now, gameRef, onClose }: { row: Row; init
             onStake={(yes, amount) => bet.mutate({ gameRef, marketId: market.id, yes, amount }, { onSuccess: () => ref.current?.close() })}
           />
         ) : (
-          <p role="alert" className="m-0 rounded-control bg-[#fde7e5] px-3.5 py-3 font-bold text-[#6b1410]">{COPY.errors.BettingClosed}</p>
+          <p role="alert" className="m-0 rounded-control bg-err-wash px-3.5 py-3 font-bold text-err-ink">{COPY.errors.BettingClosed}</p>
         )}
       </div>
     </dialog>

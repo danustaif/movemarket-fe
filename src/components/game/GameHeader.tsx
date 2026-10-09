@@ -23,7 +23,7 @@ export function GameHeader({ game }: { game: GameSummary }) {
 export function PlayerBar({ player, white, toMove }: { player: Player; white: boolean; toMove: boolean }) {
   return (
     <div className={`flex items-center gap-2.5 rounded-control bg-panel px-3 py-2 ${toMove ? "shadow-[inset_0_0_0_2px_var(--color-gold)]" : ""}`}>
-      <span aria-hidden="true" className={`h-3.5 w-3.5 rounded-tag ${white ? "bg-[#f1ecdf]" : "bg-[#1c2322] shadow-[inset_0_0_0_1px_#5d8580]"}`} />
+      <span aria-hidden="true" className={`h-3.5 w-3.5 rounded-tag ${white ? "bg-piece-white" : "bg-piece-black shadow-[inset_0_0_0_1px_var(--color-piece-edge)]"}`} />
       <b className="min-w-0 truncate">{player.name}</b>
       {player.rating !== undefined && <span className="text-sm text-muted">{player.rating}</span>}
     </div>

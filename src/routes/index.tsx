@@ -27,7 +27,7 @@ function Home() {
 
       {replayStarting && (
         <div role="status" className="flex items-center gap-3 rounded-panel bg-panel p-4 text-lg font-extrabold">
-          <Spinner size={22} accent="#f2c14e" />
+          <Spinner size={22} accent="text-gold" />
           {COPY.home.replayStarting}
         </div>
       )}
