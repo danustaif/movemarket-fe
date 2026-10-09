@@ -3,10 +3,17 @@ import { createRoute } from "@tanstack/react-router";
 import { COPY, UI } from "../components/common/copy.ts";
 import { shortAddr, usdc } from "../components/common/format.ts";
 import { Empty, ErrorBox, Skeleton } from "../components/common/States.tsx";
+import { leaderboardQuery } from "../queries/index.ts";
 import { rootRoute } from "./__root.tsx";
 import { useLeaderboard } from "./-wiring.ts";
 
-export const leaderboardRoute = createRoute({ getParentRoute: () => rootRoute, path: "/leaderboard", component: Leaderboard });
+export const leaderboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/leaderboard",
+  // Prefetch; kegagalan indexer ditampilkan oleh hook (ErrorBox), bukan errorComponent route.
+  loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQuery()).then(() => undefined, () => undefined),
+  component: Leaderboard,
+});
 
 function Leaderboard() {
   const q = useLeaderboard();
