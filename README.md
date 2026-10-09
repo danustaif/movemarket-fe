@@ -23,5 +23,14 @@ Berikutnya: `bun create vite` (React + TS) di repo ini, lalu implementasi sesuai
 
 ```bash
 bun install
-bun run typecheck
+bun run typecheck   # tsc -b, termasuk tsconfig.test.json (src + test)
+bun test            # semua test: unit (test/*.test.ts) dan DOM (test/dom/*.dom.test.tsx)
+bun test test/dom   # hanya test DOM
+bun run build
 ```
+
+Test DOM memakai happy-dom lewat preload `test/dom/setup.ts` (`bunfig.toml`, sesuai bun.com/docs/test/dom) dan
+Testing Library. Preload memblokir `fetch` global; resolver, Envio, RPC baca, dan `TxSender` diganti spy di objek
+kliennya (`test/dom/helpers.tsx` `stubBoundaries()`, `spyOn(txSenderFor(account), "liveMarket")`). Untuk elemen yang
+tidak boleh ada pakai `absent(el)`, bukan `expect(el).toBeNull()`: kegagalan yang mencetak node happy-dom membuat
+Bun menggantung.
