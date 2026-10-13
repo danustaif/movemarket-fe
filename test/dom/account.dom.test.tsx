@@ -23,7 +23,8 @@ afterEach(() => mock.restore());
 async function unlockFromHeader() {
   const user = userEvent.setup();
   const r = renderApp("/");
-  await user.click(await screen.findByRole("button", { name: COPY.actions.unlock }));
+  // Landing juga punya tombol Unlock (CTA hero); yang diuji tombol di header.
+  await user.click(await within(await screen.findByRole("banner")).findByRole("button", { name: COPY.actions.unlock }));
   const toast = await screen.findByRole("alert");
   return { ...r, user, toast };
 }

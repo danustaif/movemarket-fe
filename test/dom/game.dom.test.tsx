@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { ContractFunctionRevertedError, encodeErrorResult, maxUint256, type TransactionReceipt } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { COPY, UI, fill } from "../../src/components/common/copy.ts";
+import { webgl } from "../../src/components/board/BoardSurface.tsx";
 import { qk } from "../../src/contracts/data.ts";
 import { txSenderFor } from "../../src/lib/account/session.ts";
 import { createSseBridge } from "../../src/lib/sse.ts";
@@ -163,5 +164,32 @@ describe("/game/$gameRef", () => {
     const steps = within(dialog).getAllByRole("listitem");
     expect(steps.map((li) => li.textContent!.includes(UI.detail.done))).toEqual([true, true, false, false]);
     expect(steps[3]!.textContent).toContain(UI.detail.final);
+  });
+  test("2D/3D toggle: default 2D, choice is saved and restored after a reload", async () => {
+    spyOn(webgl, "supported").mockReturnValue(true);
+    const user = userEvent.setup();
+    const first = renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    const group = await screen.findByRole("group", { name: UI.board.view });
+    const btn = (name: string) => within(screen.getByRole("group", { name: UI.board.view })).getByRole("button", { name });
+    expect(btn(UI.board.flat).getAttribute("aria-pressed")).toBe("true");
+    await user.click(within(group).getByRole("button", { name: UI.board.solid }));
+    expect(btn(UI.board.solid).getAttribute("aria-pressed")).toBe("true");
+    expect(localStorage.getItem("movemarket.boardView")).toBe("3d");
+    // happy-dom tidak bisa membuat konteks WebGL: papan jatuh ke 2D, posisi tetap terbaca.
+    expect(await screen.findByRole("img", { name: new RegExp(fill(UI.game.plyMove, { ply: 20, move: 10 })) })).toBeTruthy();
+    first.unmount();
+
+    renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    await screen.findByRole("group", { name: UI.board.view });
+    expect(btn(UI.board.solid).getAttribute("aria-pressed")).toBe("true");
+    await user.click(btn(UI.board.flat));
+    expect(localStorage.getItem("movemarket.boardView")).toBe("2d");
+  });
+
+  test("without WebGL the board view toggle is not offered", async () => {
+    spyOn(webgl, "supported").mockReturnValue(false);
+    renderApp(`/game/${encodeURIComponent(GAME_REF)}`);
+    await screen.findByRole("article", { name: QUESTION });
+    absent(screen.queryByRole("group", { name: UI.board.view }));
   });
 });

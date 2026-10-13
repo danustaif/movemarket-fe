@@ -11,13 +11,13 @@ afterEach(() => mock.restore());
 
 describe("root layout", () => {
   test("testnet badge is always visible", async () => {
-    renderApp("/");
+    renderApp("/games");
     expect(await screen.findByText(COPY.brand.testnetBadge)).toBeTruthy();
     expect(await screen.findByText(COPY.home.noGames)).toBeTruthy();
   });
 
   test("SSE reconnecting shows the reconnect banner, cleared when open", async () => {
-    renderApp("/");
+    renderApp("/games");
     await screen.findByText(COPY.home.noGames);
     absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
     act(() => useSseStore.setState({ status: "reconnecting" }));
@@ -26,9 +26,9 @@ describe("root layout", () => {
     absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
   });
 
-  test("resolver offline on / shows RESOLVER_OFFLINE banner and error box, no crash", async () => {
+  test("resolver offline on /games shows RESOLVER_OFFLINE banner and error box, no crash", async () => {
     b.games.mockRejectedValue(new ResolverError(0, "fetch failed", "RESOLVER_OFFLINE"));
-    renderApp("/");
+    renderApp("/games");
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain(COPY.errors.RESOLVER_OFFLINE);
     expect(screen.getByRole("status").textContent).toContain(COPY.errors.RESOLVER_OFFLINE);
@@ -39,7 +39,7 @@ describe("root layout", () => {
   test("resolver offline wins over the SSE banner", async () => {
     b.games.mockRejectedValue(new ResolverError(0, "fetch failed", "RESOLVER_OFFLINE"));
     useSseStore.setState({ status: "reconnecting" });
-    renderApp("/");
+    renderApp("/games");
     await screen.findByRole("alert");
     absent(screen.queryByText(COPY.errors.SSE_RECONNECTING));
   });
