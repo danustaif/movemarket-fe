@@ -302,7 +302,7 @@ function HowResults() {
       <h2 id="how-h" className="display m-0 text-[34px] [font-stretch:70%] sm:text-[44px]">{L.howTitle}</h2>
       <ol className="m-0 list-none border-t border-rule p-0">
         {L.steps.map((s, i) => (
-          <li key={s.title} className="grid items-baseline gap-x-7 gap-y-1.5 border-b border-rule py-5 md:grid-cols-[230px_1fr_auto]">
+          <li key={s.title} className="grid items-baseline gap-x-7 gap-y-1.5 border-b border-rule py-5 md:grid-cols-[280px_1fr_auto]">
             <b className={`display text-[30px] leading-[0.95] md:text-[42px] ${i === 0 ? "text-gold" : i === L.steps.length - 1 ? "text-coral" : "text-white"}`}>{s.title}</b>
             <span className="max-w-[56ch] text-[17px] text-soft">{fill(s.text, NUMS)}</span>
             <span className="text-sm whitespace-nowrap text-muted tabular-nums">{fill(s.when, NUMS)}</span>
