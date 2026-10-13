@@ -129,3 +129,9 @@ export function usePayouts(address: Address | undefined, marketIds: readonly big
     canRefund: (id: bigint) => (q.data?.[String(id)]?.refundable ?? 0n) > 0n,
   };
 }
+
+/** Vault passkey backup alamat ini (SOT D27). Publik; dibaca /me (daftar) dan /restore (pilih vault). */
+export const backupsQuery = (address: Address) =>
+  queryOptions({ queryKey: qk.backups(address), queryFn: () => resolver.vaults(address), staleTime: 30_000 });
+
+export const useBackups = (address: Address | undefined) => useQuery({ ...backupsQuery(keyAddress(address)), enabled: !!address });

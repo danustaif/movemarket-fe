@@ -14,7 +14,8 @@ import { useAccountStore } from "../stores/account.ts";
 import { useSseStore } from "../stores/sse.ts";
 
 export { useCreateAccount };
-export { useGame, useGames, useLeaderboard, useMonBalance, usePayouts } from "../queries/index.ts";
+export { useAddBackup, useRemoveBackup, useRestoreBackup } from "../mutations/index.ts";
+export { useBackups, useGame, useGames, useLeaderboard, useMonBalance, usePayouts } from "../queries/index.ts";
 
 // ----------------------------------------------------------------- error -> toast
 

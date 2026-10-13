@@ -1,8 +1,8 @@
 // Mutation hook (FRONTEND.md bagian 5). Pesan error untuk toast: errorMessage(mutation.error) dari lib/errors.ts.
-import { SOT } from "@movemarket/shared";
+import { backupMessage, SOT, vaultId, type BackupVaultDto } from "@movemarket/shared";
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { maxUint256, type LocalAccount, type TransactionReceipt } from "viem";
+import { maxUint256, type Address, type LocalAccount, type TransactionReceipt } from "viem";
 import { AccountError, type TxSender, type UserWrite } from "../contracts/account.ts";
 import { qk, type Game, type Position } from "../contracts/data.ts";
 import type { MutationVars } from "../contracts/ui.ts";
@@ -11,7 +11,7 @@ import { canSend, txSenderFor } from "../lib/account/session.ts";
 import { publicClient } from "../lib/chain.ts";
 import { AppError, errorCode } from "../lib/errors.ts";
 import { resolver, ResolverError } from "../lib/resolver.ts";
-import { allowanceQuery, balanceQuery } from "../queries/index.ts";
+import { allowanceQuery, backupsQuery, balanceQuery } from "../queries/index.ts";
 import { useAccountStore } from "../stores/account.ts";
 
 function activeAccount(): LocalAccount {
@@ -85,6 +85,70 @@ export function useUnlockAccount() {
     },
     onError: (err) => {
       if (errorCode(err) === "ACCOUNT_MISMATCH") useAccountStore.getState().markMismatch();
+    },
+  });
+}
+
+// ----------------------------------------------------------------- passkey backup (SOT 12a, D27)
+
+const nowSec = () => Math.floor(Date.now() / 1000);
+
+/** Vault yang passkey-nya sudah dibuat tetapi belum tersimpan di resolver: "Try again" mengirim ulang tanpa passkey kedua. */
+let unsaved: { address: Address; vault: string } | undefined;
+
+/** Kode resolver (BACKUP_LIMIT, BACKUP_RATE_LIMIT) diteruskan; kegagalan lain BACKUP_SAVE_FAILED. */
+const saveFailed = (e: unknown) => (e instanceof ResolverError && e.code ? e : Object.assign(new AppError("BACKUP_SAVE_FAILED"), { cause: e }));
+
+/** Cek batas dulu (tidak membuat passkey yatim), Mera vault, tanda tangan EIP-191 tanpa gas, POST /vault. */
+export function useAddBackup() {
+  const qc = useQueryClient();
+  return useMutation<BackupVaultDto, Error, MutationVars["useAddBackup"]>({
+    mutationFn: async () => {
+      const account = activeAccount();
+      let vault = unsaved?.address === account.address ? unsaved.vault : undefined;
+      if (!vault) {
+        const list = await qc.fetchQuery({ ...backupsQuery(account.address), staleTime: 0 });
+        if (list.length >= SOT.account.backup.maxPerAddress) throw new AppError("BACKUP_LIMIT");
+        vault = await accountService.createBackupVault();
+        unsaved = { address: account.address, vault };
+      }
+      const timestamp = nowSec();
+      const signature = await account.signMessage({ message: backupMessage({ action: "add", address: account.address, vaultId: vaultId(vault), timestamp }) });
+      const rec = await resolver.addVault({ address: account.address, vault, timestamp, signature }).catch((e: unknown) => {
+        throw saveFailed(e);
+      });
+      unsaved = undefined;
+      return rec;
+    },
+    onError: lockIfSessionEnded,
+    onSettled: () => {
+      const a = useAccountStore.getState().address;
+      if (a) void qc.invalidateQueries({ queryKey: qk.backups(a) });
+    },
+  });
+}
+
+export function useRemoveBackup() {
+  const qc = useQueryClient();
+  return useMutation<unknown, Error, MutationVars["useRemoveBackup"]>({
+    mutationFn: async ({ id }) => {
+      const account = activeAccount();
+      const timestamp = nowSec();
+      const signature = await account.signMessage({ message: backupMessage({ action: "remove", address: account.address, vaultId: id, timestamp }) });
+      return resolver.removeVault(account.address, id, { timestamp, signature });
+    },
+    onError: lockIfSessionEnded,
+    onSettled: () => {
+      const a = useAccountStore.getState().address;
+      if (a) void qc.invalidateQueries({ queryKey: qk.backups(a) });
+    },
+  });
+}
+
+export function useRestoreBackup() {
+  return useMutation<void, Error, MutationVars["useRestoreBackup"]>({
+    mutationFn: async ({ address, vault }) => {
+      useAccountStore.getState().setUnlocked(await accountService.restoreFromVault(address, vault));
     },
   });
 }

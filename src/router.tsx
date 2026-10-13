@@ -9,8 +9,9 @@ import { indexRoute } from "./routes/index.tsx";
 import { leaderboardRoute } from "./routes/leaderboard.tsx";
 import { meRoute } from "./routes/me.tsx";
 import { onboardingRoute } from "./routes/onboarding.tsx";
+import { restoreAddressRoute, restoreRoute } from "./routes/restore.tsx";
 
-const routeTree = rootRoute.addChildren([indexRoute, gamesRoute, onboardingRoute, gameRoute, meRoute, leaderboardRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, gamesRoute, onboardingRoute, gameRoute, meRoute, leaderboardRoute, restoreRoute, restoreAddressRoute]);
 
 export function createAppRouter(queryClient: QueryClient) {
   return createRouter({

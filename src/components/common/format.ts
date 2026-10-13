@@ -62,3 +62,18 @@ export function clock(sec: number): string {
 }
 
 export const shortAddr = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+/** Jenis perangkat passkey backup dari `credential.transports` vault Mera (D27); label di copy ui.backup.kinds. */
+export function backupKind(vaultJson: string): string {
+  const kinds = COPY.ui.backup.kinds;
+  try {
+    const t: unknown = JSON.parse(vaultJson)?.credential?.transports;
+    const k = (["hybrid", "usb", "nfc", "ble", "internal"] as const).find((x) => Array.isArray(t) && t.includes(x));
+    return k ? kinds[k] : kinds.unknown;
+  } catch {
+    return kinds.unknown;
+  }
+}
+
+/** Detik Unix -> "Oct 14, 2026". */
+export const shortDate = (sec: number) => new Date(sec * 1000).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });

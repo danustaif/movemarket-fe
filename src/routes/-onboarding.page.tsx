@@ -72,6 +72,9 @@ export function Onboarding() {
             {create.isPending ? UI.onboarding.settingUp : create.isError ? COPY.actions.retry : COPY.actions.createAccount}
           </button>
         )}
+        {!done && acct.status === "none" && !create.isPending && (
+          <Link to="/restore" className="btn ghost lg">{COPY.actions.restoreBackup}</Link>
+        )}
         {!done && <Link to="/" className="link self-center">{UI.onboarding.watchFirst}</Link>}
       </div>
       <p className="m-0 text-[13px] text-muted">{fill(UI.onboarding.note, { hours: SOT.account.sessionTtlHours })}</p>

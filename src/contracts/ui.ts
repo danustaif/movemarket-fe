@@ -1,7 +1,7 @@
 // Kontrak UI: route, hook query/mutation, dan props komponen utama. Spesifikasi: source/docs/FRONTEND.md
 // bagian 2, 4, 5, 8; desain visual: source/DESIGN.md dan source/design/prototype/. Teks dari COPY.
 import type { GameSummary } from "@movemarket/shared";
-import type { TransactionReceipt } from "viem";
+import type { Address, Hex, TransactionReceipt } from "viem";
 import type { AccountState } from "./account.ts";
 import type { Game, Leader, Market, MarketPhase, Position } from "./data.ts";
 
@@ -16,6 +16,9 @@ export interface Routes {
   "/game/$gameRef": { params: { gameRef: string }; loader: "game" };
   "/me": { loader: "positions+balance" };
   "/leaderboard": { loader: "leaderboard" };
+  /** Pemulihan dengan passkey backup (D27): alamat diketik, atau dari link /restore/$address yang disalin di /me. */
+  "/restore": { loader: never };
+  "/restore/$address": { loader: never };
 }
 
 // ----------------------------------------------------------------- hook (queries/, mutations/)
@@ -39,6 +42,11 @@ export interface MutationVars {
   useClaim: { marketId: bigint };
   useClaimMany: { marketIds: bigint[] };
   useRefund: { marketId: bigint };
+  /** Passkey backup (D27): Mera vault + POST /vault bertanda tangan. Invalidate qk.backups. */
+  useAddBackup: void;
+  useRemoveBackup: { id: Hex };
+  /** restoreFromVault lalu status unlocked. */
+  useRestoreBackup: { address: Address; vault: string };
 }
 export type MutationResult = TransactionReceipt;
 
