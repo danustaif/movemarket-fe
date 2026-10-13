@@ -52,12 +52,6 @@ const NAV = [
   { to: "/leaderboard", label: UI.nav.leaderboard },
 ] as const;
 
-/** Landing: tautan ke bagian halaman sebelum navigasi aplikasi (prototype L2-OnAir3D). */
-const LANDING_ANCHORS = [
-  { href: "#next", label: UI.landing.nextToLock },
-  { href: "#how", label: UI.landing.howResults },
-] as const;
-
 function Layout() {
   const { sse, resolverOffline, sessionEnded, unlock } = useAppStatus();
   const landing = useRouterState({ select: (s) => s.location.pathname === "/" });
@@ -69,7 +63,6 @@ function Layout() {
             {COPY.brand.name} <span className="text-gold">{UI.nav.live}</span>
           </Link>
           <nav aria-label={UI.nav.label} className="hidden gap-1.5 sm:flex">
-            {landing && LANDING_ANCHORS.map((a) => <a key={a.href} href={a.href} className="nav whitespace-nowrap max-xl:hidden">{a.label}</a>)}
             {NAV.map((n) => (
               <Link key={n.to} to={n.to} className="nav whitespace-nowrap" activeProps={{ "aria-current": "page" }}>
                 {n.label}
