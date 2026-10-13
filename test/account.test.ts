@@ -7,6 +7,7 @@ import { mnemonicToAccount } from "viem/accounts";
 import { AccountError } from "../src/contracts/account.ts";
 import { createAccountService, type MeraDeps } from "../src/lib/account/mera.ts";
 import { accountFromPrf, deriveEvmPrivateKey } from "../src/lib/account/prf.ts";
+import { createVault } from "../src/lib/account/vault.ts";
 
 const HARDHAT = "test test test test test test test test test test test junk";
 const HARDHAT_ADDR = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
@@ -50,9 +51,12 @@ function memStorage() {
 }
 const cancelled = () => Promise.reject(new MeraError("PASSKEY_OPERATION_FAILED", "NotAllowedError"));
 function deps(o: Partial<MeraDeps> = {}): MeraDeps {
+  const storage = memStorage();
+  let key: CryptoKey | undefined;
   return {
     rpId: "localhost",
-    storage: memStorage(),
+    storage,
+    vault: createVault({ storage, keys: { get: async () => key, put: async (k) => void (key = k), del: async () => void (key = undefined) } }),
     createPasskeyWithPrfOutput: async () => ({ credentialId: "cred1", prfSalt: new Uint8Array(32), prfOutput: prf32() }),
     getPasskeyPrfOutput: async () => ({ credentialId: "cred1", prfOutput: prf32() }),
     ...o,
@@ -60,7 +64,7 @@ function deps(o: Partial<MeraDeps> = {}): MeraDeps {
 }
 
 describe("AccountService", () => {
-  test("create stores only the marker", async () => {
+  test("create stores the marker", async () => {
     const d = deps();
     const acc = await createAccountService(d).create();
     expect(JSON.parse(d.storage.getItem(SOT.account.storageKey)!)).toEqual({ rpId: "localhost", address: acc.address, credentialId: "cred1" });
