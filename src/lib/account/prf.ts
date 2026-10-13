@@ -38,16 +38,28 @@ export function deriveEvmPrivateKey(prfOutput: Uint8Array, fromMasterSeed: Maste
   }
 }
 
-/** Sesi Mera + akun viem dari output PRF. prfOutput dan privateKey di-zero-kan, juga saat gagal. */
-export function accountFromPrf(prfOutput: Uint8Array): { session: Secp256k1SigningSession; account: LocalAccount } {
-  let privateKey: Uint8Array | undefined;
+type Account = { session: Secp256k1SigningSession; account: LocalAccount };
+
+/**
+ * Sesi Mera + akun viem dari kunci privat; privateKey di-zero-kan, juga saat gagal. `keep` (vault.seal) dipanggil
+ * sebelum zero dan wajib menyalin byte secara sinkron.
+ */
+export function accountFromPrivateKey(privateKey: Uint8Array, keep?: (privateKey: Uint8Array, address: LocalAccount["address"]) => void): Account {
   try {
-    privateKey = deriveEvmPrivateKey(prfOutput);
     const session = createSecp256k1SigningSession({ privateKey });
-    return { session, account: toViemAccount(session, { nonceManager }) };
+    const account = toViemAccount(session, { nonceManager });
+    keep?.(privateKey, account.address);
+    return { session, account };
   } finally {
-    privateKey?.fill(0);
-    prfOutput.fill(0);
+    privateKey.fill(0);
   }
 }
 
+/** Sesi Mera + akun viem dari output PRF. prfOutput dan privateKey di-zero-kan, juga saat gagal. */
+export function accountFromPrf(prfOutput: Uint8Array, keep?: Parameters<typeof accountFromPrivateKey>[1]): Account {
+  try {
+    return accountFromPrivateKey(deriveEvmPrivateKey(prfOutput), keep);
+  } finally {
+    prfOutput.fill(0);
+  }
+}

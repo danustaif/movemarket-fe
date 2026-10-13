@@ -2,12 +2,15 @@
 // bagian 2, 4, 5, 8; desain visual: source/DESIGN.md dan source/design/prototype/. Teks dari COPY.
 import type { GameSummary } from "@movemarket/shared";
 import type { TransactionReceipt } from "viem";
+import type { AccountState } from "./account.ts";
 import type { Game, Leader, Market, MarketPhase, Position } from "./data.ts";
 
 // ----------------------------------------------------------------- route (TanStack Router)
 
 export interface Routes {
+  /** Landing: partai unggulan + pasar terbuka semua meja (detail tiap partai yang belum selesai). */
   "/": { loader: "games" };
+  "/games": { loader: "games" };
   "/onboarding": { loader: null };
   /** gameRef di-encode dengan encodeURIComponent. */
   "/game/$gameRef": { params: { gameRef: string }; loader: "game" };
@@ -60,7 +63,7 @@ export interface BetPanelProps {
   market: Market;
   /** Sisa cap = maxStakePerUser - stake pengguna di pasar ini. */
   remainingCap: bigint;
-  account: "none" | "locked" | "unlocked";
+  account: AccountState["status"];
   pending: boolean;
   onStake(yes: boolean, amount: bigint): void;
 }

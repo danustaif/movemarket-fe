@@ -3,7 +3,7 @@
 import type { liveMarketAbi, Copy } from "@movemarket/shared";
 import type { Address, ContractFunctionArgs, ContractFunctionName, LocalAccount, TransactionReceipt } from "viem";
 
-/** Satu-satunya yang disimpan di localStorage key SOT.account.storageKey ("movemarket.account.v1"). */
+/** Penanda akun di localStorage key SOT.account.storageKey. Sesi terenkripsi terpisah: lib/account/vault.ts (D26). */
 export interface StoredMarker {
   rpId: string;
   address: Address;
@@ -19,6 +19,8 @@ export type AccountErrorCode = Extract<
 /**
  * lib/account/mera.ts. Derivasi: PRF 32 byte -> BIP-39 24 kata -> seed -> m/44'/60'/0'/0/0 -> sesi Mera
  * -> toViemAccount. prfOutput, seed, privateKey di-fill(0) setelah sesi dibuat; mnemonic tidak pernah disimpan.
+ * Setelah create/unlock berhasil, privateKey disegel AES-GCM (kunci non-extractable di IndexedDB) supaya refresh
+ * memulihkan sesi tanpa passkey selama SOT.account.sessionTtlHours (D26).
  * Semua kegagalan dilempar sebagai AccountError.
  */
 export interface AccountService {
@@ -28,6 +30,10 @@ export interface AccountService {
   unlock(): Promise<LocalAccount>;
   marker(): StoredMarker | null;
   clearMarker(): void;
+  /** Ada sesi tersimpan (D26) yang belum kedaluwarsa untuk alamat di marker. Sinkron: menentukan status awal "restoring". */
+  hasSession(): boolean;
+  /** Pulihkan akun dari sesi tersimpan tanpa passkey. Gagal apa pun -> sesi dihapus, null (status "locked"). */
+  restore(): Promise<LocalAccount | null>;
 }
 
 export class AccountError extends Error {
@@ -38,9 +44,9 @@ export class AccountError extends Error {
   }
 }
 
-/** stores/account.ts (Zustand). account hanya di memori. */
+/** stores/account.ts (Zustand). account hanya di memori. "restoring": sesi tersimpan sedang dipulihkan saat app dimuat. */
 export interface AccountState {
-  status: "none" | "locked" | "unlocked";
+  status: "none" | "locked" | "restoring" | "unlocked";
   address?: Address;
   account?: LocalAccount;
   /** Unlock terakhir menghasilkan ACCOUNT_MISMATCH: akun itu tidak dipakai, UI menawarkan akun baru. */
@@ -50,6 +56,8 @@ export interface AccountState {
   markMismatch(): void;
   /** Hapus marker dan kembali ke status "none" supaya /onboarding membuat akun baru (USER_FLOW bagian 8). */
   startOver(): void;
+  /** Dipanggil sekali saat app dimuat: sesi tersimpan -> "restoring" -> "unlocked" atau "locked". Tanpa sesi: no-op. */
+  restore(): Promise<void>;
 }
 
 // ----------------------------------------------------------------- transaksi
