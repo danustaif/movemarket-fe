@@ -96,4 +96,15 @@ describe("BetPanel", () => {
     await user.click(button);
     expect(onStake).not.toHaveBeenCalled();
   });
+  test("restoring session: stake is disabled and busy, no Unlock offered, clicking sends nothing", async () => {
+    const onUnlock = mock(() => {});
+    const { onStake, user } = await panel({ account: "restoring", onUnlock });
+    const btn = stakeButton();
+    expect(btn.disabled).toBe(true);
+    expect(btn.getAttribute("aria-busy")).toBe("true");
+    absent(screen.queryByRole("button", { name: COPY.actions.unlock }));
+    await user.click(btn);
+    expect(onStake).not.toHaveBeenCalled();
+    expect(onUnlock).not.toHaveBeenCalled();
+  });
 });

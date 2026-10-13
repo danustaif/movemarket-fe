@@ -106,6 +106,12 @@ export function BetPanel({
           {unlocking ? <Spinner /> : <LockIcon />}
           {COPY.actions.unlock}
         </button>
+      ) : account === "restoring" ? (
+        // Sesi tersimpan sedang dipulihkan (D26): stake sekarang akan gagal SESSION_ENDED, jadi tunggu.
+        <button type="button" className={`btn ${yes ? "yes" : "no"} lg busy`} disabled aria-busy="true">
+          <Spinner />
+          {COPY.actions.stake}
+        </button>
       ) : (
         <button
           type="button" className={`btn ${yes ? "yes" : "no"} lg ${pending ? "busy" : ""}`}
