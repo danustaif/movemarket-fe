@@ -126,7 +126,7 @@ function Positions() {
           {COPY.errors.RESOLVER_OFFLINE}
         </ErrorBox>
       ) : rows.length === 0 ? (
-        <Empty action={<Link to="/" className="btn gold">{UI.nav.games}</Link>}>{UI.me.noPositions}</Empty>
+        <Empty action={<Link to="/games" className="btn gold">{UI.nav.games}</Link>}>{UI.me.noPositions}</Empty>
       ) : (
         <div className="flex flex-col gap-1.5">
           {rows.map(({ p, phase }) => (

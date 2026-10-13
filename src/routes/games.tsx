@@ -1,4 +1,4 @@
-// Beranda: partai live di atas, replay di bawah (USER_FLOW.md bagian 1 dan 6).
+// Daftar semua partai (dulu beranda /): live di atas, replay di bawah (USER_FLOW.md bagian 1 dan 6).
 import { createRoute } from "@tanstack/react-router";
 import { COPY, UI } from "../components/common/copy.ts";
 import { ErrorBox, Empty, Skeleton } from "../components/common/States.tsx";
@@ -8,15 +8,15 @@ import { gamesQuery } from "../queries/index.ts";
 import { rootRoute } from "./__root.tsx";
 import { useGames, useReplayStarting } from "./-wiring.ts";
 
-export const indexRoute = createRoute({
+export const gamesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: "/games",
   // Prefetch saja: resolver mati tidak boleh memblokir halaman; hook menampilkan state error.
   loader: ({ context }) => context.queryClient.ensureQueryData(gamesQuery()).catch(() => undefined),
-  component: Home,
+  component: Games,
 });
 
-function Home() {
+function Games() {
   const games = useGames();
   const replayStarting = useReplayStarting();
   const list = [...(games.data ?? [])].sort((a, b) => Number(a.isReplay) - Number(b.isReplay) || Number(a.ended) - Number(b.ended));
