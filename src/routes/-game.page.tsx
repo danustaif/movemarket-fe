@@ -1,30 +1,25 @@
 // Komponen route gameRoute (dimuat lazy lewat lazyRouteComponent).
-import { SOT, moveNumber } from "@movemarket/shared";
+import { SOT } from "@movemarket/shared";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { lastMove } from "../components/board/lastMove.ts";
-import { LiveBoard } from "../components/board/LiveBoard.tsx";
+import { BoardViewToggle, useBoardView } from "../components/board/BoardSurface.tsx";
+import { boardLabel, LiveBoard } from "../components/board/LiveBoard.tsx";
+import { useLastMove } from "../components/board/useLastMove.ts";
 import { COPY, UI, fill } from "../components/common/copy.ts";
 import { ErrorBox, Skeleton } from "../components/common/States.tsx";
 import { useNowSec } from "../components/common/useNowSec.ts";
 import { GameHeader, PlayerBar } from "../components/game/GameHeader.tsx";
-import { BetPanel } from "../components/market/BetPanel.tsx";
-import { Countdown } from "../components/market/Countdown.tsx";
 import { LowerThird } from "../components/market/LowerThird.tsx";
 import { MarketCard, VerticalPoolBar } from "../components/market/MarketCard.tsx";
 import { MarketDetail } from "../components/market/MarketDetail.tsx";
-import { OutcomeBadge } from "../components/market/OutcomeBadge.tsx";
-import type { Market, MarketPhase, Position } from "../contracts/data.ts";
-import { deriveMarketPhase, IN_PLAY, isClosingSoon, SETTLED } from "../lib/marketPhase.ts";
+import { StakeSheet, type Row } from "../components/market/StakeSheet.tsx";
+import { deriveMarketPhase, IN_PLAY, SETTLED } from "../lib/marketPhase.ts";
 import { ResolverError } from "../lib/resolver.ts";
-import { useAccountView, useBet, useChainOffset, useGame, useGetTokens, usePositions } from "./-wiring.ts";
+import { useAccountView, useChainOffset, useGame, usePositions } from "./-wiring.ts";
 
 import { gameRoute } from "./game.$gameRef.tsx";
 
-const MAX_STAKE = BigInt(SOT.contract.defaults.maxStakePerUser);
 const FEE_BPS = SOT.contract.defaults.feeBps;
-
-type Row = { market: Market; phase: MarketPhase; position?: Position };
 
 function Section({ id, title, count, empty, children }: { id: string; title: string; count: number; empty: string; children: ReactNode }) {
   return (
@@ -45,11 +40,10 @@ export function GamePage() {
   const positions = usePositions(acct.address);
   const [pick, setPick] = useState<{ id: bigint; yes: boolean } | null>(null);
   const [detailId, setDetailId] = useState<bigint | null>(null);
+  const [view, setView] = useBoardView();
 
-  // FEN sebelumnya untuk sorotan langkah terakhir (state disesuaikan saat render, tanpa effect).
   const fen = game.data?.game.fen;
-  const [fens, setFens] = useState<{ cur?: string; prev?: string }>({ cur: fen });
-  if (fen !== fens.cur) setFens({ cur: fen, prev: fens.cur });
+  const move = useLastMove(fen, game.data?.game.sans.at(-1), game.data?.game.ply ?? 0);
   // Strip ply terakhir digulir ke langkah terbaru setiap ada langkah baru.
   const stripRef = useRef<HTMLOListElement>(null);
   useEffect(() => { stripRef.current?.scrollTo({ left: stripRef.current.scrollWidth }); }, [fen]);
@@ -61,7 +55,7 @@ export function GamePage() {
     const notFound = game.error instanceof ResolverError && game.error.status === 404;
     return (
       <ErrorBox action={notFound
-        ? <Link to="/" className="btn gold sm">{UI.game.back}</Link>
+        ? <Link to="/games" className="btn gold sm">{UI.game.back}</Link>
         : <button type="button" className="btn gold sm" onClick={() => game.refetch()}>{COPY.actions.retry}</button>}>
         {notFound ? UI.game.notFound : COPY.errors.RESOLVER_OFFLINE}
       </ErrorBox>
@@ -97,12 +91,13 @@ export function GamePage() {
         <div className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-[76px]">
           <PlayerBar player={g.black} white={false} toMove={!g.ended && !whiteToMove} />
           <LiveBoard
-            fen={g.fen} ply={g.ply} isReplay={g.isReplay}
-            lastMove={lastMove(fens.prev, g.fen, lastSan, g.ply)}
+            fen={g.fen} ply={g.ply} isReplay={g.isReplay} view={view} lastSan={lastSan}
+            lastMove={move}
             aside={<VerticalPoolBar poolYes={pinned?.market.poolYes ?? 0n} poolNo={pinned?.market.poolNo ?? 0n} />}
-            label={lastSan ? `${fill(UI.game.plyMove, { ply: g.ply, move: moveNumber(g.ply) })}, ${fill(UI.game.lastMove, { san: lastSan })}` : undefined}
+            label={boardLabel(g.ply, lastSan)}
           />
           <PlayerBar player={g.white} white toMove={!g.ended && whiteToMove} />
+          <BoardViewToggle view={view} onChange={setView} />
           {recent.length > 0 && (
             <ol aria-label={fill(UI.game.lastMove, { san: lastSan ?? "" })} className="m-0 flex list-none gap-1 overflow-x-auto p-0" ref={stripRef}>
               {recent.map((m, i) => (
@@ -143,45 +138,5 @@ export function GamePage() {
         <StakeSheet row={picked} initialYes={pick.yes} now={now} gameRef={gameRef} onClose={() => setPick(null)} />
       )}
     </div>
-  );
-}
-
-function StakeSheet({ row, initialYes, now, gameRef, onClose }: { row: Row; initialYes: boolean; now: number; gameRef: string; onClose(): void }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const acct = useAccountView();
-  const bet = useBet();
-  const getTokens = useGetTokens();
-  const { market, phase, position } = row;
-  const staked = position ? position.stakeYes + position.stakeNo : 0n;
-
-  // Tanpa cleanup close(): di StrictMode close() memicu onClose dan langsung menutup lembar. Unmount sudah melepas dialog.
-  useEffect(() => {
-    if (ref.current && !ref.current.open) ref.current.showModal();
-  }, []);
-
-  return (
-    <dialog ref={ref} className="sheet pop" aria-labelledby="sk-h" onClose={onClose} onClick={(e) => e.target === ref.current && ref.current.close()}>
-      <div className="flex items-center gap-2.5 pt-3 pr-3 pl-4.5">
-        {phase.phase === "open"
-          ? <span className={`tag ${isClosingSoon(phase.secondsLeft) ? "bg-coral" : "bg-gold"} text-ink`}><Countdown lockTime={market.lockTime} nowSec={now} /></span>
-          : <OutcomeBadge phase={phase} />}
-        <button type="button" className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-control border-0 bg-transparent text-ink hover:bg-wash" onClick={() => ref.current?.close()} aria-label={UI.stake.close}>
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
-        </button>
-      </div>
-      <div className="flex flex-col gap-3.5 px-4.5 pt-1.5 pb-4.5">
-        <h2 id="sk-h" className="m-0 text-[22px] leading-tight font-extrabold">{market.question}</h2>
-        {phase.phase === "open" ? (
-          <BetPanel
-            market={market} remainingCap={MAX_STAKE - staked} account={acct.status} pending={bet.isPending}
-            initialYes={initialYes} balance={acct.balance}
-            onUnlock={acct.unlock} unlocking={acct.unlocking} onGetTokens={getTokens}
-            onStake={(yes, amount) => bet.mutate({ gameRef, marketId: market.id, yes, amount }, { onSuccess: () => ref.current?.close() })}
-          />
-        ) : (
-          <p role="alert" className="m-0 rounded-control bg-err-wash px-3.5 py-3 font-bold text-err-ink">{COPY.errors.BettingClosed}</p>
-        )}
-      </div>
-    </dialog>
   );
 }
