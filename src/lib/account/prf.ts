@@ -3,7 +3,10 @@
 import {
   createPasskeyWithPrfOutput,
   createSecp256k1SigningSession,
+  createSecretVaultWithNewPasskey,
+  decryptSecretVaultWithPasskey,
   getPasskeyPrfOutput,
+  parseSecretVault,
   type Secp256k1SigningSession,
 } from "@category-labs/mera";
 import { toViemAccount } from "@category-labs/mera/viem";
@@ -13,7 +16,7 @@ import { entropyToMnemonic, mnemonicToSeedSync } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import { nonceManager, type LocalAccount } from "viem";
 
-export { createPasskeyWithPrfOutput, getPasskeyPrfOutput };
+export { createPasskeyWithPrfOutput, createSecretVaultWithNewPasskey, decryptSecretVaultWithPasskey, getPasskeyPrfOutput, parseSecretVault };
 
 type MasterFromSeed = (seed: Uint8Array) => Pick<HDKey, "derive" | "wipePrivateData">;
 
@@ -62,4 +65,11 @@ export function accountFromPrf(prfOutput: Uint8Array, keep?: Parameters<typeof a
   } finally {
     prfOutput.fill(0);
   }
+}
+
+/** Alamat akun dari entropi (bagian 12) tanpa menyentuh buffer pemanggil; sesi langsung diakhiri. */
+export function addressFromEntropy(entropy: Uint8Array): LocalAccount["address"] {
+  const { session, account } = accountFromPrf(entropy.slice());
+  session.end();
+  return account.address;
 }

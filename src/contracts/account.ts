@@ -1,5 +1,6 @@
 // Kontrak akun (Mera passkey) dan pengiriman transaksi. Spesifikasi: source/docs/FRONTEND.md bagian 3 dan 5,
 // source/docs/SOT.md bagian 12 dan 13a.
+import type { PasskeySecretVault } from "@category-labs/mera";
 import type { liveMarketAbi, Copy } from "@movemarket/shared";
 import type { Address, ContractFunctionArgs, ContractFunctionName, LocalAccount, TransactionReceipt } from "viem";
 
@@ -8,12 +9,15 @@ export interface StoredMarker {
   rpId: string;
   address: Address;
   credentialId: string;
+  /** Perangkat yang dipulihkan dengan passkey backup (D27): vault Mera (ciphertext) yang dibuka passkey `credentialId`. */
+  vault?: PasskeySecretVault;
 }
 
 /** Error akun yang ditampilkan UI; teks di copy.errors[code]. */
 export type AccountErrorCode = Extract<
   keyof Copy["errors"],
-  "PRF_UNAVAILABLE" | "PASSKEY_CANCELLED" | "UNLOCK_CANCELLED" | "CRYPTO_UNAVAILABLE" | "SESSION_ENDED" | "ACCOUNT_MISMATCH"
+  | "PRF_UNAVAILABLE" | "PASSKEY_CANCELLED" | "UNLOCK_CANCELLED" | "CRYPTO_UNAVAILABLE" | "SESSION_ENDED" | "ACCOUNT_MISMATCH"
+  | "BACKUP_CANCELLED" | "RESTORE_CANCELLED" | "BACKUP_DECRYPT_FAILED"
 >;
 
 /**
@@ -34,6 +38,13 @@ export interface AccountService {
   hasSession(): boolean;
   /** Pulihkan akun dari sesi tersimpan tanpa passkey. Gagal apa pun -> sesi dihapus, null (status "locked"). */
   restore(): Promise<LocalAccount | null>;
+  /**
+   * Passkey backup (SOT 12a, D27): konfirmasi ulang passkey perangkat ini (entropi akun, alamat harus = penanda),
+   * lalu createSecretVaultWithNewPasskey. Mengembalikan JSON vault (hanya ciphertext) untuk POST /vault.
+   */
+  createBackupVault(): Promise<string>;
+  /** decryptSecretVaultWithPasskey -> derivasi bagian 12 -> alamat harus = `address`; penanda menyimpan vault, sesi D26 disegel. */
+  restoreFromVault(address: Address, vaultJson: string): Promise<LocalAccount>;
 }
 
 export class AccountError extends Error {

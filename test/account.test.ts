@@ -59,6 +59,8 @@ function deps(o: Partial<MeraDeps> = {}): MeraDeps {
     vault: createVault({ storage, keys: { get: async () => key, put: async (k) => void (key = k), del: async () => void (key = undefined) } }),
     createPasskeyWithPrfOutput: async () => ({ credentialId: "cred1", prfSalt: new Uint8Array(32), prfOutput: prf32() }),
     getPasskeyPrfOutput: async () => ({ credentialId: "cred1", prfOutput: prf32() }),
+    createSecretVaultWithNewPasskey: cancelled,
+    decryptSecretVaultWithPasskey: cancelled,
     ...o,
   };
 }

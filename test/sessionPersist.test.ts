@@ -35,6 +35,8 @@ function device() {
       vault: createVault({ storage, keys, now: () => clock.t }),
       createPasskeyWithPrfOutput: async () => (prompts++, { credentialId: "cred1", prfSalt: new Uint8Array(32), prfOutput: prf() }),
       getPasskeyPrfOutput: async () => (prompts++, { credentialId: "cred1", prfOutput: prf() }),
+      createSecretVaultWithNewPasskey: () => Promise.reject(new Error("not used")),
+      decryptSecretVaultWithPasskey: () => Promise.reject(new Error("not used")),
     } satisfies MeraDeps);
   return { storage, keys, clock, service, prompts: () => prompts, usePrf: (f: () => Uint8Array<ArrayBuffer>) => void (prf = f) };
 }
