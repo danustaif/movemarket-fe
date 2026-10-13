@@ -297,23 +297,17 @@ function NextToLock({ open, now, games }: { open: Open[]; now: number; games: Re
 // ----------------------------------------------------------------- How results work
 
 function HowResults() {
-  const last = L.steps.length - 1;
   return (
     <section id="how" aria-labelledby="how-h" className="mx-auto flex max-w-[1380px] scroll-mt-16 flex-col gap-7 px-4 pt-13 pb-15 sm:px-7">
       <h2 id="how-h" className="display m-0 text-[34px] [font-stretch:70%] sm:text-[44px]">{L.howTitle}</h2>
-      <ol className="relative m-0 grid list-none gap-x-4.5 gap-y-5.5 p-0 lg:grid-cols-5">
-        <span aria-hidden="true" className="absolute top-[7px] right-2 left-2 hidden h-0.5 bg-rule lg:block" />
-        {L.steps.map((s, i) => {
-          const tone = i === 0 ? "text-gold" : i === last ? "text-coral" : "text-white";
-          const dot = i === 0 ? "bg-gold" : i === last ? "bg-coral" : "bg-white";
-          return (
-            <li key={s.title} className="relative flex flex-col gap-2">
-              <span aria-hidden="true" className={`h-4 w-4 rounded-full shadow-[0_0_0_4px_var(--color-studio)] ${dot}`} />
-              <b className={`display text-[22px] leading-[1.05] ${tone}`}>{s.title}</b>
-              <span className="text-[15px] text-soft">{fill(s.text, NUMS)}</span>
-            </li>
-          );
-        })}
+      <ol className="m-0 list-none border-t border-rule p-0">
+        {L.steps.map((s, i) => (
+          <li key={s.title} className="grid items-baseline gap-x-7 gap-y-1.5 border-b border-rule py-5 md:grid-cols-[230px_1fr_auto]">
+            <b className={`display text-[30px] leading-[0.95] md:text-[42px] ${i === 0 ? "text-gold" : i === L.steps.length - 1 ? "text-coral" : "text-white"}`}>{s.title}</b>
+            <span className="max-w-[56ch] text-[17px] text-soft">{fill(s.text, NUMS)}</span>
+            <span className="text-sm whitespace-nowrap text-muted tabular-nums">{fill(s.when, NUMS)}</span>
+          </li>
+        ))}
       </ol>
     </section>
   );

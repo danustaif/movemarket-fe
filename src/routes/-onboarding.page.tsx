@@ -1,6 +1,7 @@
 // Komponen route onboardingRoute (lazy). Buat akun passkey: penjelasan, langkah (passkey, faucet, approve), error dari COPY.errors.
 import { Link, useNavigate } from "@tanstack/react-router";
-import { COPY, UI } from "../components/common/copy.ts";
+import { SOT } from "@movemarket/shared";
+import { COPY, UI, fill } from "../components/common/copy.ts";
 import { LockIcon, Spinner } from "../components/common/Spinner.tsx";
 import { ErrorBox } from "../components/common/States.tsx";
 import { errorMessage } from "../lib/errors.ts";
@@ -73,7 +74,7 @@ export function Onboarding() {
         )}
         {!done && <Link to="/" className="link self-center">{UI.onboarding.watchFirst}</Link>}
       </div>
-      <p className="m-0 text-[13px] text-muted">{UI.onboarding.note}</p>
+      <p className="m-0 text-[13px] text-muted">{fill(UI.onboarding.note, { hours: SOT.account.sessionTtlHours })}</p>
     </section>
   );
 }
