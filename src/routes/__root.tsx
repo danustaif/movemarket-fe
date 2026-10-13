@@ -56,13 +56,14 @@ function Layout() {
   const { sse, resolverOffline, sessionEnded, unlock } = useAppStatus();
   const landing = useRouterState({ select: (s) => s.location.pathname === "/" });
   return (
-    <div className="flex min-h-screen flex-col pb-[58px] sm:pb-0">
+    <div className="flex min-h-screen flex-col pb-[58px] md:pb-0">
       <header className="sticky top-0 z-20 bg-control">
-        <div className="mx-auto flex min-h-[60px] max-w-[1380px] items-center gap-x-2.5 px-3 sm:gap-x-6 sm:px-7">
-          <Link to="/" className="display font-extrabold text-[20px] tracking-[0.02em] whitespace-nowrap sm:text-[22px] text-white no-underline">
-            {COPY.brand.name} <span className="text-gold">{UI.nav.live}</span>
+        <div className="mx-auto flex min-h-[60px] max-w-[1380px] items-center gap-x-2.5 px-3 sm:gap-x-4 lg:gap-x-6 sm:px-7">
+          <Link to="/" className="display flex shrink-0 items-center gap-2 font-extrabold text-[20px] tracking-[0.02em] whitespace-nowrap sm:text-[22px] text-white no-underline">
+            <img src="/favicon.svg" alt="" width={28} height={28} className="rounded-[6px]" />
+            <span className="max-[400px]:sr-only">{COPY.brand.name} <span className="text-gold">{UI.nav.live}</span></span>
           </Link>
-          <nav aria-label={UI.nav.label} className="hidden gap-1.5 sm:flex">
+          <nav aria-label={UI.nav.label} className="hidden gap-1.5 md:flex">
             {NAV.map((n) => (
               <Link key={n.to} to={n.to} className="nav whitespace-nowrap" activeProps={{ "aria-current": "page" }}>
                 {n.label}
@@ -70,7 +71,7 @@ function Layout() {
             ))}
           </nav>
           <div className="flex-auto" />
-          <span className="rounded-tag bg-muted px-2 py-[3px] text-[13px] font-bold whitespace-nowrap text-ink">{COPY.brand.testnetBadge}</span>
+          <span className="rounded-tag bg-muted px-2 py-[3px] text-[13px] font-bold whitespace-nowrap text-ink md:max-lg:hidden">{COPY.brand.testnetBadge}</span>
           <AccountArea />
         </div>
       </header>
@@ -89,7 +90,7 @@ function Layout() {
 
       <footer className="mx-auto box-border w-full max-w-[1380px] px-4 pt-3.5 pb-6 text-[13px] text-muted sm:px-7">{UI.footer}</footer>
 
-      <nav aria-label={UI.nav.label} className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_var(--color-divider)] sm:hidden">
+      <nav aria-label={UI.nav.label} className="fixed inset-x-0 bottom-0 z-20 flex bg-control shadow-[0_-1px_0_var(--color-divider)] md:hidden">
         {NAV.map((n) => (
           <Link key={n.to} to={n.to} className="tab" activeProps={{ "aria-current": "page" }}>
             {n.label}
