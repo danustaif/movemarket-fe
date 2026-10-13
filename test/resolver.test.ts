@@ -34,6 +34,21 @@ describe("ResolverClient", () => {
       resolveDeadline: 1790021600, settled: false, claimable: 9_800_000n, voidReason: null });
   });
 
+  test("vault routes: GET list, POST body, DELETE with signed body (backup passkey, D27)", async () => {
+    const calls: Call[] = [];
+    const a = "0x00000000000000000000000000000000000000aa";
+    const id = `0x${"ab".repeat(32)}` as const;
+    const c = createResolverClient("http://r", fakeFetch(200, { vaults: [] }, calls));
+    expect(await c.vaults(a)).toEqual([]);
+    await c.addVault({ address: a, vault: "{}", timestamp: 1, signature: "0x01" });
+    await c.removeVault(a, id, { timestamp: 2, signature: "0x02" });
+    expect(calls.map((x) => [x.url, x.init?.method ?? "GET", x.init?.body ?? null])).toEqual([
+      [`http://r/vault/${a}`, "GET", null],
+      ["http://r/vault", "POST", JSON.stringify({ address: a, vault: "{}", timestamp: 1, signature: "0x01" })],
+      [`http://r/vault/${a}/${id}`, "DELETE", JSON.stringify({ timestamp: 2, signature: "0x02" })],
+    ]);
+  });
+
   test("faucet() POSTs the address as JSON", async () => {
     const calls: Call[] = [];
     const res = await createResolverClient("http://r", fakeFetch(200, { usdcTx: "0x01", monTx: null }, calls))

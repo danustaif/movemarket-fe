@@ -1,7 +1,8 @@
 // Kontrak lapisan data frontend: model domain (bigint), klien resolver/indexer, query key, SSE ke cache.
 // Spesifikasi: source/docs/FRONTEND.md bagian 4 sampai 7.
 import type {
-  FinalOutcome, GameDetail, GameSummary, IndexedPosition, MarketDto, PositionDto, SseEvents, VoidReasonCode,
+  BackupAddBody, BackupRemoveBody, BackupVaultDto, FinalOutcome, GameDetail, GameSummary, IndexedPosition, MarketDto, PositionDto, SseEvents,
+  VoidReasonCode,
 } from "@movemarket/shared";
 import type { Address, Hex } from "viem";
 
@@ -43,6 +44,10 @@ export interface ResolverClient {
   faucet(address: Address): Promise<{ usdcTx: Hex; monTx: Hex | null }>;
   /** Isi ulang gas. 409 saldo masih cukup, 429 kuota habis (errors.GAS_TOPUP_LIMIT). */
   faucetGas(address: Address): Promise<{ monTx: Hex }>;
+  /** Passkey backup (SOT D27). Error 4xx membawa code BACKUP_LIMIT / BACKUP_RATE_LIMIT. */
+  vaults(address: Address): Promise<BackupVaultDto[]>;
+  addVault(body: BackupAddBody): Promise<BackupVaultDto>;
+  removeVault(address: Address, id: Hex, body: BackupRemoveBody): Promise<{ ok: true }>;
 }
 
 /** Baris peringkat dengan nominal bigint (LeaderboardRow wire dikonversi di lib/envio.ts). */
@@ -71,6 +76,7 @@ export const qk = {
   allowance: (addr: string) => ["allowance", addr.toLowerCase()] as const,
   leaderboard: () => ["leaderboard"] as const,
   chainTime: () => ["chainTime"] as const,
+  backups: (addr: string) => ["backups", addr.toLowerCase()] as const,
 };
 
 // ----------------------------------------------------------------- SSE (lib/sse.ts)

@@ -37,11 +37,11 @@ type Res<R extends keyof ResolverRoutes> = ResolverRoutes[R]["res"];
 export function createResolverClient(baseUrl: string, fetchImpl: FetchLike = (...a) => fetch(...a)): ResolverClient {
   const base = baseUrl.replace(/\/+$/, "");
 
-  async function call<R extends keyof ResolverRoutes>(path: string, body?: ResolverRoutes[R]["body"]): Promise<Res<R>> {
+  async function call<R extends keyof ResolverRoutes>(path: string, body?: ResolverRoutes[R]["body"], method = "POST"): Promise<Res<R>> {
     let res: Response;
     try {
       res = await fetchImpl(`${base}${path}`, body === undefined ? undefined : {
-        method: "POST",
+        method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
@@ -65,6 +65,9 @@ export function createResolverClient(baseUrl: string, fetchImpl: FetchLike = (..
       (await call<"GET /positions/:address">(`/positions/${address}`)).positions.map(toPosition),
     faucet: (address) => call<"POST /faucet">("/faucet", { address }),
     faucetGas: (address) => call<"POST /faucet/gas">("/faucet/gas", { address }),
+    vaults: async (address) => (await call<"GET /vault/:address">(`/vault/${address}`)).vaults,
+    addVault: (body) => call<"POST /vault">("/vault", body),
+    removeVault: (address, id, body) => call<"DELETE /vault/:address/:id">(`/vault/${address}/${id}`, body, "DELETE"),
   };
 }
 
