@@ -28,7 +28,20 @@ Bun menggantung.
 
 ## Deploy (statis)
 
-SPA biasa: `bun run build` menghasilkan `dist/`. Belum ada deploy; file berikut menyiapkan fallback route ke `index.html`
+Produksi: **https://movemarket-chess.vercel.app** (proyek Vercel `movemarket-chess`, scope `wildanus-projects-c54861c9`). `VITE_RP_ID` = `movemarket-chess.vercel.app` dan **tidak boleh diganti** (SOT D25). Deploy ulang (prebuilt, karena build butuh `../source`):
+
+```bash
+cd fe
+vercel pull --yes --environment=production
+export VITE_CHAIN_ID=10143 VITE_RPC_URL=https://testnet-rpc.monad.xyz \
+  VITE_LIVE_MARKET_ADDRESS=<addresses.liveMarket SOT> VITE_MOCK_USDC_ADDRESS=<addresses.mockUsdc SOT> \
+  VITE_RESOLVER_URL=https://api.43-133-151-182.sslip.io \
+  VITE_ENVIO_URL=https://indexer.43-133-151-182.sslip.io/v1/graphql \
+  VITE_RP_ID=movemarket-chess.vercel.app
+vercel build --prod --yes && vercel deploy --prebuilt --prod --yes
+```
+
+SPA biasa: `bun run build` menghasilkan `dist/`. File berikut menyiapkan fallback route ke `index.html`
 supaya `/game/...`, `/me`, dan seterusnya bisa dibuka langsung.
 
 | Platform | File | Catatan |
