@@ -35,6 +35,9 @@
   --color-board-dark: #5f9f8f;
   --color-board-last-light: #f5f08a;
   --color-board-last-dark: #b8c95c;
+  /* Landing (prototype web-design-2026-10-14): pita Next to lock dan barisnya. */
+  --color-night: #061f1c;
+  --color-row: #0d2f2b;
 
   --radius-tag: 2px;
   --radius-control: 4px;
@@ -105,11 +108,19 @@
   .amt:focus { border-color: var(--color-ink); outline: 3px solid var(--color-gold); outline-offset: 1px; }
   .amt[aria-invalid="true"] { border-color: #c4302b; }
 
-  .nav { color: var(--color-muted); font-weight: 700; font-size: 15px; padding: 8px 12px; border-radius: var(--radius-control); display: inline-flex; gap: 6px; align-items: center; text-decoration: none; }
+  .nav { color: var(--color-muted); font-weight: 700; font-size: 15px; min-height: 44px; padding: 8px 12px; border-radius: var(--radius-control); display: inline-flex; gap: 6px; align-items: center; text-decoration: none; }
   .nav:hover { color: #fff; background: rgb(255 255 255 / .05); }
   .nav[aria-current="page"] { color: #fff; background: var(--color-panel); }
   .tab { flex: 1 1 0; color: var(--color-muted); font-weight: 700; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 58px; text-decoration: none; }
   .tab[aria-current="page"] { color: var(--color-gold); }
+
+  /* Toggle segmen (papan 2D/3D). */
+  .seg { min-height: 44px; min-width: 52px; padding: 0 12px; border: 0; border-radius: 3px; background: transparent; color: var(--color-muted); font-weight: 800; font-size: 14px; }
+  .seg:hover { color: #fff; }
+  .seg[aria-pressed="true"] { background: var(--color-gold); color: var(--color-ink); }
+
+  /* Bidak 2D yang baru mendarat: setelah meluncur, turun dari posisi terangkat. */
+  .mm-land { animation: mmland .32s ease-out forwards; }
 
   .mcard { background: var(--color-panel); border-radius: var(--radius-panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 
@@ -124,5 +135,6 @@
 }
 
 @keyframes mmspin { to { transform: rotate(360deg); } }
+@keyframes mmland { from { transform: scale(1.16); filter: drop-shadow(0 10px 6px rgb(0 0 0 / .45)); } to { transform: none; filter: none; } }
 @keyframes mmup { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

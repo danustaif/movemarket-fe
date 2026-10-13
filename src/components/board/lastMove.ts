@@ -13,6 +13,18 @@ function squares(fen: string): string[] {
 }
 const name = (i: number) => `${FILES[i % 8]}${8 - Math.floor(i / 8)}`;
 
+/** Petak berisi bidak dari FEN: { e4: "N", ... } (huruf besar = putih). */
+export function pieceMap(fen: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  squares(fen).forEach((p, i) => { if (p) out[name(i)] = p; });
+  return out;
+}
+
+/** Tanda ply dari SAN untuk daftar ply terakhir: skak diutamakan, lalu makan, lalu rokade. */
+export function sanTag(san: string): "check" | "capture" | "castle" | null {
+  return /[+#]/.test(san) ? "check" : san.includes("x") ? "capture" : san.startsWith("O-O") ? "castle" : null;
+}
+
 /** Petak tujuan dari SAN ("Nxe5+", "O-O"). `whiteMoved` menentukan baris rokade. */
 export function toSquareFromSan(san: string, whiteMoved: boolean): string | null {
   const rank = whiteMoved ? "1" : "8";

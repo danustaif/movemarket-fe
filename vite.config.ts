@@ -19,6 +19,8 @@ export default defineConfig({
   // @movemarket/shared dan sot/*.json berada di ../source (repo berdampingan), di luar root Vite. Hanya dev server.
   server: { fs: { allow: ['..'] } },
   build: {
+    // Chunk Board3D (three.js, ~580 kB mentah / ~150 kB gzip) dimuat lazy hanya saat papan 3D tampil.
+    chunkSizeWarningLimit: 600,
     rolldownOptions: {
       output: {
         // Hanya modul awal ($initial) yang dikelompokkan, supaya chunk lazy (prf, halaman) tidak ikut tertarik ke awal.
