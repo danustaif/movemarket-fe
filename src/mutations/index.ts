@@ -11,7 +11,7 @@ import { canSend, txSenderFor } from "../lib/account/session.ts";
 import { publicClient } from "../lib/chain.ts";
 import { AppError, errorCode } from "../lib/errors.ts";
 import { resolver, ResolverError } from "../lib/resolver.ts";
-import { allowanceQuery, backupsQuery, balanceQuery } from "../queries/index.ts";
+import { allowanceQuery, backupsQuery, balanceQuery, markSettled } from "../queries/index.ts";
 import { useAccountStore } from "../stores/account.ts";
 
 function activeAccount(): LocalAccount {
@@ -217,6 +217,10 @@ function useSettle<V>(fn: UserWrite, send: (sender: TxSender, v: V) => Promise<T
       const set = new Set(ids(v));
       qc.setQueryData<Position[]>(key, (ps) => ps?.map((p) => (set.has(p.marketId) ? { ...p, settled: true, claimable: 0n } : p)));
       return { prev };
+    },
+    onSuccess: (_r, v) => {
+      const address = useAccountStore.getState().address;
+      if (address) markSettled(address, ids(v));
     },
     onError: (err, _v, ctx) => {
       const address = useAccountStore.getState().address;

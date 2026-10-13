@@ -17,16 +17,29 @@ export const gamesQuery = () =>
 export const gameQuery = (gameRef: string) =>
   queryOptions({ queryKey: qk.game(gameRef), queryFn: (): Promise<QueryData["useGame"]> => resolver.game(gameRef), staleTime: 0 });
 
+/**
+ * Pasar yang claim/refund-nya sudah sukses di sesi ini (alamat lowercase:id). Indexer/resolver bisa tertinggal
+ * 1-2 detik dari receipt; tanpa ini refetch langsung setelah transaksi memunculkan lagi tombol Claim/Refund.
+ * Settled hanya bisa berubah satu arah, jadi aman disimpan selama sesi.
+ */
+const settledLocally = new Set<string>();
+export const markSettled = (address: string, ids: readonly bigint[]) => {
+  for (const id of ids) settledLocally.add(`${address.toLowerCase()}:${id}`);
+};
+
 export const positionsQuery = (address: Address) =>
   queryOptions({
     queryKey: qk.positions(address),
     queryFn: async (): Promise<QueryData["usePositions"]> => {
+      let ps: QueryData["usePositions"];
       try {
-        return (await indexer.positions(address)).map(positionFromIndexed);
+        ps = (await indexer.positions(address)).map(positionFromIndexed);
       } catch {
         // Indexer kosong atau bermasalah: cadangan GET /positions/:address.
-        return resolver.positions(address);
+        ps = await resolver.positions(address);
       }
+      const a = address.toLowerCase();
+      return ps.map((p) => (!p.settled && settledLocally.has(`${a}:${p.marketId}`) ? { ...p, settled: true, claimable: 0n } : p));
     },
     staleTime: 10_000,
   });

@@ -8,6 +8,7 @@ import { COPY, UI, fill } from "../../src/components/common/copy.ts";
 import { qk } from "../../src/contracts/data.ts";
 import { gasLimits, txSenderFor } from "../../src/lib/account/session.ts";
 import { chain, publicClient } from "../../src/lib/chain.ts";
+import { indexer } from "../../src/lib/envio.ts";
 import { useAccountStore } from "../../src/stores/account.ts";
 import { absent, position, renderApp, stubBoundaries } from "./helpers.tsx";
 
@@ -75,6 +76,20 @@ describe("/me", () => {
     expect(await screen.findByText(`0.5123 ${chain.nativeCurrency.symbol}`)).toBeTruthy();
     expect(screen.getByText(UI.me.gas)).toBeTruthy();
     expect(getBalance).toHaveBeenCalledWith({ address: addr });
+  });
+
+  test("refund stays settled when the indexer has not caught up yet (no Refund button after refetch)", async () => {
+    // Envio belum mengindeks Refunded: refetch masih mengembalikan posisi 9 sebagai belum settled.
+    spyOn(indexer, "positions").mockRejectedValue(new Error("indexer lag"));
+    const { queryClient } = renderMe();
+    const { resolver } = await import("../../src/lib/resolver.ts");
+    spyOn(resolver, "positions").mockResolvedValue(positions);
+    const name = `${COPY.actions.refund} 1.00 ${SYMBOL}`;
+    await userEvent.setup().click(await screen.findByRole("button", { name }));
+    await waitFor(() => expect(liveMarket).toHaveBeenCalledWith("refund", [9n]));
+    await queryClient.refetchQueries({ queryKey: qk.positions(addr) });
+    await waitFor(() => expect(queryClient.getQueryData<{ marketId: bigint; settled: boolean }[]>(qk.positions(addr))?.find((p) => p.marketId === 9n)?.settled).toBe(true));
+    absent(screen.queryByRole("button", { name }));
   });
 
   test("refund per market goes through refund", async () => {
